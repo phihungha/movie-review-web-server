@@ -1,0 +1,8 @@
+services:
+  server:
+    env_file:
+      - .env
+
+  postgres-db:
+    env_file:
+      - .env
