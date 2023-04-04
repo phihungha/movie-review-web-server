@@ -21,4 +21,4 @@ services:
 
 volumes:
   postgres-data:
-    name: ${VOLUME_NAME:-mra-db-data}
+    name: ${VOLUME_NAME:-mrw-db-data}
