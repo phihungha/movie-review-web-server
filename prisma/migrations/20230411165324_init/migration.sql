@@ -1,16 +1,15 @@
-/*
-  Warnings:
-
-  - Added the required column `birthDate` to the `User` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `type` to the `User` table without a default value. This is not possible if the table is not empty.
-
-*/
 -- CreateEnum
 CREATE TYPE "UserType" AS ENUM ('Regular', 'Critic');
 
--- AlterTable
-ALTER TABLE "User" ADD COLUMN     "birthDate" TIMESTAMP(3) NOT NULL,
-ADD COLUMN     "type" "UserType" NOT NULL;
+-- CreateTable
+CREATE TABLE "User" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "birthDate" TIMESTAMP(3) NOT NULL,
+    "type" "UserType" NOT NULL,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "Genre" (
@@ -71,17 +70,6 @@ CREATE TABLE "Review" (
     "commentCount" INTEGER NOT NULL,
 
     CONSTRAINT "Review_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Comment" (
-    "id" SERIAL NOT NULL,
-    "authorId" INTEGER NOT NULL,
-    "reviewId" INTEGER NOT NULL,
-    "postTime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "content" TEXT NOT NULL,
-
-    CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -215,12 +203,6 @@ ALTER TABLE "Review" ADD CONSTRAINT "Review_authorId_fkey" FOREIGN KEY ("authorI
 
 -- AddForeignKey
 ALTER TABLE "Review" ADD CONSTRAINT "Review_movieId_fkey" FOREIGN KEY ("movieId") REFERENCES "Movie"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Comment" ADD CONSTRAINT "Comment_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Comment" ADD CONSTRAINT "Comment_reviewId_fkey" FOREIGN KEY ("reviewId") REFERENCES "Review"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_GenreToMovie" ADD CONSTRAINT "_GenreToMovie_A_fkey" FOREIGN KEY ("A") REFERENCES "Genre"("id") ON DELETE CASCADE ON UPDATE CASCADE;
