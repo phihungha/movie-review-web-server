@@ -1,17 +1,17 @@
 services:
-  server:
+  api-server:
     build:
       target: build
     environment:
-      - DATABASE_URL=postgresql://app:app@postgres-db:5432/app?schema=public
-      - SERVER_PORT=3000
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@postgres-db:5432/${POSTGRES_DB:-app}?schema=public
+      - JWT_SECRET=${JWT_SECRET:-5snACD6WbVNXQGq8iZC6kVJFc}
     volumes:
-      - ./:/app
+      - .:/app
       - /app/node_modules
-    command: sh -c "npm run migrate-dev && npm run dev"
+    command: npm run dev
 
   postgres-db:
     environment:
-      - POSTGRES_USER=app
-      - POSTGRES_PASSWORD=app
-      - POSTGRES_DB=app
+      - POSTGRES_USER=${POSTGRES_USER:-app}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-app}
+      - POSTGRES_DB=${POSTGRES_DB:-app}

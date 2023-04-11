@@ -1,24 +1,22 @@
 services:
-  server:
-    container_name: server
-    depends_on:
-      - postgres-db
+  api-server:
+    container_name: api-server
     build:
       context: .
       dockerfile: Dockerfile
-    restart: always
     ports:
       - ${SERVER_PORT:-3000}:${SERVER_PORT:-3000}
+    depends_on:
+      - postgres-db
 
   postgres-db:
     container_name: postgres-db
     image: postgres:15
-    restart: always
     ports:
       - 5432:5432
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
 
 volumes:
-  postgres-data:
+  db-data:
     name: ${VOLUME_NAME:-mrw-db-data}
