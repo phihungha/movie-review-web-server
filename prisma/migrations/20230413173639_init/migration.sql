@@ -1,14 +1,32 @@
 -- CreateEnum
-CREATE TYPE "UserType" AS ENUM ('Regular', 'Critic');
+CREATE TYPE "Gender" AS ENUM ('Male', 'Female', 'Other');
 
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
+    "username" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "gender" "Gender" NOT NULL,
     "birthDate" TIMESTAMP(3) NOT NULL,
-    "type" "UserType" NOT NULL,
+    "hashedPassword" TEXT NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "RegularUser" (
+    "id" INTEGER NOT NULL,
+
+    CONSTRAINT "RegularUser_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CriticUser" (
+    "id" INTEGER NOT NULL,
+    "blogUrl" TEXT NOT NULL,
+
+    CONSTRAINT "CriticUser_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -49,7 +67,6 @@ CREATE TABLE "Movie" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "releaseDate" TIMESTAMP(3) NOT NULL,
-    "reviewCount" INTEGER NOT NULL,
     "userScore" DOUBLE PRECISION NOT NULL,
     "userReviewCount" INTEGER NOT NULL,
     "criticScore" DOUBLE PRECISION NOT NULL,
@@ -66,8 +83,7 @@ CREATE TABLE "Review" (
     "postTime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "score" INTEGER NOT NULL,
     "content" TEXT NOT NULL,
-    "likeCount" INTEGER NOT NULL,
-    "commentCount" INTEGER NOT NULL,
+    "thankCount" INTEGER NOT NULL,
 
     CONSTRAINT "Review_pkey" PRIMARY KEY ("id")
 );
@@ -127,10 +143,22 @@ CREATE TABLE "_MovieToUser" (
 );
 
 -- CreateTable
-CREATE TABLE "_review-likes" (
+CREATE TABLE "_review-thanks" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Genre_name_key" ON "Genre"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Company_name_key" ON "Company"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_GenreToMovie_AB_unique" ON "_GenreToMovie"("A", "B");
@@ -187,10 +215,16 @@ CREATE UNIQUE INDEX "_MovieToUser_AB_unique" ON "_MovieToUser"("A", "B");
 CREATE INDEX "_MovieToUser_B_index" ON "_MovieToUser"("B");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_review-likes_AB_unique" ON "_review-likes"("A", "B");
+CREATE UNIQUE INDEX "_review-thanks_AB_unique" ON "_review-thanks"("A", "B");
 
 -- CreateIndex
-CREATE INDEX "_review-likes_B_index" ON "_review-likes"("B");
+CREATE INDEX "_review-thanks_B_index" ON "_review-thanks"("B");
+
+-- AddForeignKey
+ALTER TABLE "RegularUser" ADD CONSTRAINT "RegularUser_id_fkey" FOREIGN KEY ("id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CriticUser" ADD CONSTRAINT "CriticUser_id_fkey" FOREIGN KEY ("id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ActingCredit" ADD CONSTRAINT "ActingCredit_crewId_fkey" FOREIGN KEY ("crewId") REFERENCES "CrewMember"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -259,7 +293,7 @@ ALTER TABLE "_MovieToUser" ADD CONSTRAINT "_MovieToUser_A_fkey" FOREIGN KEY ("A"
 ALTER TABLE "_MovieToUser" ADD CONSTRAINT "_MovieToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_review-likes" ADD CONSTRAINT "_review-likes_A_fkey" FOREIGN KEY ("A") REFERENCES "Review"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_review-thanks" ADD CONSTRAINT "_review-thanks_A_fkey" FOREIGN KEY ("A") REFERENCES "Review"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_review-likes" ADD CONSTRAINT "_review-likes_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_review-thanks" ADD CONSTRAINT "_review-thanks_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

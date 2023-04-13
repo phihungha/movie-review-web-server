@@ -11,30 +11,47 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  birthDate DateTime
-  type      UserType
+  id             Int          @id @default(autoincrement())
+  username       String       @unique
+  email          String       @unique
+  name           String
+  gender         Gender
+  birthDate      DateTime
+  criticUser     CriticUser?
+  regularUser    RegularUser?
+  hashedPassword String
 
   reviews      Review[] @relation(name: "review-author")
-  reviewLikes  Review[] @relation(name: "review-likes")
+  reviewThanks Review[] @relation(name: "review-thanks")
   viewedMovies Movie[]
 }
 
-enum UserType {
-  Regular
-  Critic
+enum Gender {
+  Male
+  Female
+  Other
+}
+
+model RegularUser {
+  user User @relation(fields: [id], references: [id])
+  id   Int  @id
+}
+
+model CriticUser {
+  user    User   @relation(fields: [id], references: [id])
+  id      Int    @id
+  blogUrl String
 }
 
 model Genre {
   id     Int     @id @default(autoincrement())
-  name   String
+  name   String  @unique
   movies Movie[]
 }
 
 model Company {
   id                Int     @id @default(autoincrement())
-  name              String
+  name              String  @unique
   producedMovies    Movie[] @relation(name: "production-company")
   distributedMovies Movie[] @relation(name: "distribution-company")
 }
@@ -76,7 +93,6 @@ model Movie {
   actors    ActingCredit[]
 
   reviews           Review[]
-  reviewCount       Int
   userScore         Float
   userReviewCount   Int
   criticScore       Float
@@ -95,7 +111,6 @@ model Review {
   score    Int
   content  String
 
-  likeUsers    User[] @relation(name: "review-likes")
-  likeCount    Int
-  commentCount Int
+  thankUsers User[] @relation(name: "review-thanks")
+  thankCount Int
 }
