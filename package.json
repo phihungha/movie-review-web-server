@@ -1,17 +1,23 @@
 {
   "name": "movie-review-web-server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "REST API server for Movie Review Website",
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node-dev src/index.ts",
-    "migrate-dev": "prisma migrate dev",
-    "format": "prettier -w .",
-    "format-check": "prettier -c .",
-    "lint": "eslint --cache --fix src/",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write .",
+    "format-check": "prettier --check .",
+    "lint": "eslint \"{src,test}/**/*.ts\" --cache --fix",
+    "test": "jest --passWithNoTests",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:dev:create": "prisma migrate dev --create-only",
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:reset": "prisma migrate reset",
+    "prisma:generate": "prisma generate",
+    "prisma:studio": "prisma studio",
     "prepare": "husky install"
   },
   "keywords": [],
@@ -19,19 +25,27 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^4.12.0",
+    "bcrypt": "^5.1.0",
     "body-parser": "^1.20.2",
-    "cookie-parser": "^1.4.6",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "express-validator": "^6.15.0",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "passport": "^0.6.0",
-    "passport-local": "^1.0.0",
-    "serve-favicon": "^2.5.0"
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
+    "@types/body-parser": "^1.19.2",
     "@types/express": "^4.17.17",
+    "@types/morgan": "^1.9.4",
+    "@types/multer": "^1.4.7",
     "@types/node": "^18.15.11",
+    "@types/passport": "^1.0.12",
+    "@types/passport-jwt": "^3.0.8",
+    "@types/passport-local": "^1.0.35",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
     "@typescript-eslint/parser": "^5.57.1",
     "eslint": "^8.37.0",
@@ -44,11 +58,14 @@
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.0.3"
   },
+  "prisma": {
+    "seed": "ts-node ./prisma/seed.ts"
+  },
   "lint-staged": {
-    "*.ts": [
-      "npm run format",
-      "npm run lint"
+    "*.{js,ts}": [
+      "prettier --write",
+      "eslint --cache --fix"
     ],
-    "*.md": "npm run format"
+    "*.{json,css,md,yml}": "prettier --write"
   }
 }

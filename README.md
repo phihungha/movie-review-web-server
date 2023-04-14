@@ -1,4 +1,4 @@
-# Backend server for Movie Review Website project
+# API server for Movie Review Website project
 
 Technology stack:
 
