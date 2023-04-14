@@ -80,10 +80,11 @@ CREATE TABLE "Review" (
     "id" SERIAL NOT NULL,
     "authorId" INTEGER NOT NULL,
     "movieId" INTEGER NOT NULL,
+    "title" TEXT NOT NULL,
     "postTime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "score" INTEGER NOT NULL,
     "content" TEXT NOT NULL,
-    "thankCount" INTEGER NOT NULL,
+    "thankCount" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Review_pkey" PRIMARY KEY ("id")
 );

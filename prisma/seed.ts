@@ -141,8 +141,9 @@ async function main() {
 
   await prismaClient.review.create({
     data: {
-      author: { connect: { id: regular1.id } },
-      movie: { connect: { id: movie1.id } },
+      authorId: regular1.id,
+      movieId: movie1.id,
+      title: 'Very good film',
       score: 9,
       content: 'This film is peak fiction',
       thankCount: 2,
@@ -152,8 +153,9 @@ async function main() {
 
   await prismaClient.review.create({
     data: {
-      author: { connect: { id: regular2.id } },
-      movie: { connect: { id: movie1.id } },
+      authorId: regular2.id,
+      movieId: movie1.id,
+      title: 'Good',
       score: 8,
       content: 'OK film I guess',
       thankCount: 0,
@@ -162,8 +164,9 @@ async function main() {
 
   await prismaClient.review.create({
     data: {
-      author: { connect: { id: critic1.id } },
-      movie: { connect: { id: movie1.id } },
+      authorId: critic1.id,
+      movieId: movie1.id,
+      title: 'Best movie ever',
       score: 8,
       content: 'Martin Scorsese is at his best in this movie.',
       thankCount: 1,
@@ -173,8 +176,9 @@ async function main() {
 
   await prismaClient.review.create({
     data: {
-      author: { connect: { id: critic1.id } },
-      movie: { connect: { id: movie2.id } },
+      authorId: critic1.id,
+      movieId: movie2.id,
+      title: 'Entertaining',
       score: 8,
       content: 'A great blockbuster.',
       thankCount: 2,

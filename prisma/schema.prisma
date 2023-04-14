@@ -107,10 +107,11 @@ model Review {
   movie    Movie @relation(fields: [movieId], references: [id])
   movieId  Int
 
+  title    String
   postTime DateTime @default(now())
   score    Int
   content  String
 
   thankUsers User[] @relation(name: "review-thanks")
-  thankCount Int
+  thankCount Int    @default(0)
 }
