@@ -81,7 +81,7 @@ router.delete(
 );
 
 router.put(
-  '/:movieId/reviews/:id/thank',
+  '/:movieId/reviews/:id/thanks',
   param('id').toInt(),
   validationErrorHandler,
   passport.authenticate('jwt', { session: false }),

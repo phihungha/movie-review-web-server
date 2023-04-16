@@ -30,7 +30,7 @@ router.delete(
 );
 
 router.put(
-  '/:id/thank',
+  '/:id/thanks',
   param('id').toInt(),
   validationErrorHandler,
   passport.authenticate('jwt', { session: false }),
