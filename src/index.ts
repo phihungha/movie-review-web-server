@@ -6,6 +6,7 @@ import MoviesRouter from './routes/movies.route';
 import ReviewsRouter from './routes/reviews.route';
 import passport from 'passport';
 import jwtStrategy from './passport-strategies/jwt.strategy';
+import errorHandler from './middlewares/error-handling.middleware';
 
 dotenv.config();
 const serverPort = process.env.SERVER_PORT;
@@ -18,6 +19,7 @@ passport.use(jwtStrategy);
 app.use('/auth', AuthRouter);
 app.use('/movies', MoviesRouter);
 app.use('/reviews', ReviewsRouter);
+app.use(errorHandler);
 
 app.listen(serverPort, () => {
   console.log(`Express server is running at http://localhost:${serverPort}`);
