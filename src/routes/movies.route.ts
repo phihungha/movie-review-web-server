@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { getMovieDetails, getMovies } from '../controllers/movies.controller';
 import { body, param, query } from 'express-validator';
-import validationErrorHandler from '../middlewares/validation-response.middleware';
+import validationErrorHandler from '../middlewares/validation-error-handler.middleware';
 import {
   deleteReview,
   getReview,

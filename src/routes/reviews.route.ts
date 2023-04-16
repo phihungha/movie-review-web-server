@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import validationErrorHandler from '../middlewares/validation-response.middleware';
+import validationErrorHandler from '../middlewares/validation-error-handler.middleware';
 import {
   deleteReview,
   updateReview,
