@@ -1,5 +1,9 @@
 import { Router } from 'express';
-import { getMovieDetails, getMovies } from '../controllers/movies.controller';
+import {
+  getMovieDetails,
+  getMovies,
+  markMovieAsViewed,
+} from '../controllers/movies.controller';
 import { body, param, query } from 'express-validator';
 import validationErrorHandler from '../middlewares/validation-error-handler.middleware';
 import {
@@ -21,6 +25,14 @@ router.get(
   param('id').toInt(),
   validationErrorHandler,
   getMovieDetails,
+);
+
+router.put(
+  '/:id/viewed',
+  param('id').toInt(),
+  validationErrorHandler,
+  passport.authenticate('jwt', { session: false }),
+  markMovieAsViewed,
 );
 
 router.get(

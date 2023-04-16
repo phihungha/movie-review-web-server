@@ -93,11 +93,12 @@ model Movie {
   actors    ActingCredit[]
 
   reviews           Review[]
-  userScore         Float
-  userReviewCount   Int
-  criticScore       Float
-  criticReviewCount Int
+  userScore         Float?
+  userReviewCount   Int      @default(0)
+  criticScore       Float?
+  criticReviewCount Int      @default(0)
   viewedUsers       User[]
+  viewedUserCount   Int      @default(0)
 }
 
 model Review {

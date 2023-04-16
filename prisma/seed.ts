@@ -119,6 +119,10 @@ async function main() {
       criticReviewCount: 1,
       userScore: 8.5,
       criticScore: 9,
+      viewedUsers: {
+        connect: [{ id: regular1.id }, { id: regular2.id }, { id: critic1.id }],
+      },
+      viewedUserCount: 3,
     },
   });
 
@@ -136,6 +140,10 @@ async function main() {
       criticReviewCount: 1,
       userScore: 9,
       criticScore: 8,
+      viewedUsers: {
+        connect: [{ id: critic1.id }],
+      },
+      viewedUserCount: 1,
     },
   });
 

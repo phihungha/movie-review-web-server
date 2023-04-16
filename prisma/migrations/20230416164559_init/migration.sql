@@ -67,10 +67,11 @@ CREATE TABLE "Movie" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "releaseDate" TIMESTAMP(3) NOT NULL,
-    "userScore" DOUBLE PRECISION NOT NULL,
-    "userReviewCount" INTEGER NOT NULL,
-    "criticScore" DOUBLE PRECISION NOT NULL,
-    "criticReviewCount" INTEGER NOT NULL,
+    "userScore" DOUBLE PRECISION,
+    "userReviewCount" INTEGER NOT NULL DEFAULT 0,
+    "criticScore" DOUBLE PRECISION,
+    "criticReviewCount" INTEGER NOT NULL DEFAULT 0,
+    "viewedUserCount" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Movie_pkey" PRIMARY KEY ("id")
 );

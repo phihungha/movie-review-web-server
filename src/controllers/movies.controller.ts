@@ -1,5 +1,7 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { prismaClient } from '../db';
+import { HttpNotFoundError } from '../http-errors';
+import { User } from '@prisma/client';
 
 export async function getMovies(req: Request, res: Response) {
   const searchTerm = req.query.searchTerm as string | undefined;
@@ -37,6 +39,56 @@ export async function getMovieDetails(req: Request, res: Response) {
         },
       },
     },
+  });
+  res.json(result);
+}
+
+export async function markMovieAsViewed(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const movieId = +req.params.id;
+  const user = req.user as User;
+
+  const result = await prismaClient.$transaction(async (client) => {
+    const movie = await client.movie.findUnique({
+      where: {
+        id: movieId,
+      },
+      include: {
+        viewedUsers: {
+          where: {
+            id: user.id,
+          },
+        },
+      },
+    });
+
+    if (!movie) {
+      return next(new HttpNotFoundError('Movie not found'));
+    }
+
+    if (movie.viewedUsers.length === 0) {
+      return await client.movie.update({
+        where: {
+          id: movieId,
+        },
+        data: {
+          viewedUsers: { connect: { id: user.id } },
+          viewedUserCount: { increment: 1 },
+        },
+      });
+    }
+    return await client.movie.update({
+      where: {
+        id: movieId,
+      },
+      data: {
+        viewedUsers: { disconnect: { id: user.id } },
+        viewedUserCount: { decrement: 1 },
+      },
+    });
   });
   res.json(result);
 }
