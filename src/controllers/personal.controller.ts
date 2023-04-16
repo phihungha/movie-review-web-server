@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import { User } from '@prisma/client';
 import {
-  getReviewsOfUser,
-  getThankedReviewsOfUser,
-  getViewedMoviesOfUser,
+  getReviewsByUserId,
+  getThankedReviewsByUserId,
+  getViewedMoviesByUserId,
 } from '../data/users.data';
 
 export async function getViewedMoviesOfCurrentUser(
@@ -11,13 +11,13 @@ export async function getViewedMoviesOfCurrentUser(
   res: Response,
 ) {
   const user = req.user as User;
-  const result = await getViewedMoviesOfUser(user.id);
+  const result = await getViewedMoviesByUserId(user.id);
   res.json(result);
 }
 
 export async function getReviewsOfCurrentUser(req: Request, res: Response) {
   const user = req.user as User;
-  const result = await getReviewsOfUser(user.id);
+  const result = await getReviewsByUserId(user.id);
   res.json(result);
 }
 
@@ -26,6 +26,6 @@ export async function getThankedReviewsOfCurrentUser(
   res: Response,
 ) {
   const user = req.user as User;
-  const result = await getThankedReviewsOfUser(user.id);
+  const result = await getThankedReviewsByUserId(user.id);
   res.json(result);
 }
