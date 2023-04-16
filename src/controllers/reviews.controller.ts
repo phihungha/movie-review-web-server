@@ -4,11 +4,11 @@ import { User } from '@prisma/client';
 
 export async function getReviewsOfMovie(req: Request, res: Response) {
   const movieId = +req.params.id;
-  const limit = req.query.limit;
-  const offset = req.query.offset;
+  const limit = req.query.limit as number | undefined;
+  const offset = req.query.offset as number | undefined;
   const orderBy = req.query.orderBy;
-  const asc = req.query.orderBy;
-  const orderDirection = asc === 'true' ? 'asc' : 'desc';
+  const asc = req.query.asc as boolean | undefined;
+  const orderDirection = asc ? 'asc' : 'desc';
 
   const result = await prismaClient.review.findMany({
     where: {
@@ -24,8 +24,8 @@ export async function getReviewsOfMovie(req: Request, res: Response) {
         },
       },
     },
-    take: limit ? +limit : undefined,
-    skip: offset ? +offset : undefined,
+    take: limit ? limit : undefined,
+    skip: offset ? offset : undefined,
     orderBy: {
       thankCount: orderBy === 'thankCount' ? orderDirection : undefined,
       postTime: orderBy === 'postTime' ? orderDirection : undefined,
@@ -62,9 +62,9 @@ export async function getReview(req: Request, res: Response) {
 export async function postReviewOfMovie(req: Request, res: Response) {
   const movieId = +req.params.id;
   const author = req.user as User;
-  const title = req.body.title as string;
-  const content = req.body.content as string;
-  const score = +(req.body.score as string);
+  const title = req.body.title;
+  const content = req.body.content;
+  const score = req.body.score as number;
 
   const result = await prismaClient.review.create({
     data: {
@@ -73,6 +73,18 @@ export async function postReviewOfMovie(req: Request, res: Response) {
       title,
       content,
       score,
+    },
+  });
+
+  res.json(result);
+}
+
+export async function deleteReview(req: Request, res: Response) {
+  const reviewId = +req.params.id;
+
+  const result = await prismaClient.review.delete({
+    where: {
+      id: reviewId,
     },
   });
 

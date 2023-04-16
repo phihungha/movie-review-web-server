@@ -12,10 +12,10 @@ export async function getMovies(req: Request, res: Response) {
 }
 
 export async function getMovieDetails(req: Request, res: Response) {
-  const movieId = req.params.id as string;
+  const movieId = +req.params.id;
   const result = await prismaClient.movie.findUnique({
     where: {
-      id: +movieId,
+      id: movieId,
     },
     include: {
       directors: true,

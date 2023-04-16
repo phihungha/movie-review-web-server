@@ -3,6 +3,8 @@ import { getMovieDetails, getMovies } from '../controllers/movies.controller';
 import { body, param, query } from 'express-validator';
 import validationErrorHandler from '../middlewares/validation-response.middleware';
 import {
+  deleteReview,
+  getReview,
   getReviewsOfMovie,
   postReviewOfMovie,
 } from '../controllers/reviews.controller';
@@ -11,31 +13,49 @@ import passport from 'passport';
 const router = Router();
 
 router.get('/', getMovies);
+
 router.get(
   '/:id',
-  param('id').isInt(),
+  param('id').toInt(),
   validationErrorHandler,
   getMovieDetails,
 );
+
 router.get(
   '/:id/reviews',
-  param('id').isInt(),
-  query('limit').optional().isInt({ min: 0 }),
-  query('skip').optional().isInt({ min: 0 }),
+  param('id').toInt(),
+  query('limit').optional().isInt({ min: 0 }).toInt(),
+  query('skip').optional().isInt({ min: 0 }).toInt(),
   query('orderBy').optional().isIn(['thankCount', 'postTime', 'score']),
-  query('asc').optional().isBoolean(),
+  query('asc').optional().toBoolean(),
   validationErrorHandler,
   getReviewsOfMovie,
 );
+
+router.get(
+  '/:movieId/reviews/:id',
+  param('id').toInt(),
+  validationErrorHandler,
+  getReview,
+);
+
 router.post(
   '/:id/reviews',
-  param('id').isInt(),
+  param('id').toInt(),
   body('title').notEmpty(),
   body('content').notEmpty(),
-  body('score').isInt({ min: 0, max: 10 }),
+  body('score').isInt({ min: 0, max: 10 }).toInt(),
   validationErrorHandler,
   passport.authenticate('jwt', { session: false }),
   postReviewOfMovie,
+);
+
+router.delete(
+  '/:movieId/reviews/:id',
+  param('id').toInt(),
+  validationErrorHandler,
+  passport.authenticate('jwt', { session: false }),
+  deleteReview,
 );
 
 export default router;
