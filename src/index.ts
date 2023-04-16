@@ -4,6 +4,8 @@ import bodyParser from 'body-parser';
 import AuthRouter from './routes/auth.route';
 import MoviesRouter from './routes/movies.route';
 import ReviewsRouter from './routes/reviews.route';
+import UsersRouter from './routes/users.route';
+import PersonalRouter from './routes/personal.route';
 import passport from 'passport';
 import jwtStrategy from './passport-strategies/jwt.strategy';
 import errorHandler from './middlewares/error-handler.middleware';
@@ -19,6 +21,8 @@ app.use(bodyParser.json());
 app.use('/auth', AuthRouter);
 app.use('/movies', MoviesRouter);
 app.use('/reviews', ReviewsRouter);
+app.use('/users', UsersRouter);
+app.use('/personal', PersonalRouter);
 app.use(errorHandler);
 
 app.listen(serverPort, () => {
