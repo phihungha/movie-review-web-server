@@ -1,6 +1,6 @@
 services:
-  api-server:
-    container_name: api-server
+  express-api-server:
+    container_name: express-api-server
     build:
       context: .
       dockerfile: Dockerfile
