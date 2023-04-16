@@ -7,6 +7,7 @@ import {
   getReview,
   getReviewsOfMovie,
   postReviewOfMovie,
+  thankReview,
   updateReview,
 } from '../controllers/reviews.controller';
 import passport from 'passport';
@@ -65,6 +66,14 @@ router.delete(
   validationErrorHandler,
   passport.authenticate('jwt', { session: false }),
   deleteReview,
+);
+
+router.put(
+  '/:movieId/reviews/:id/thank',
+  param('id').toInt(),
+  validationErrorHandler,
+  passport.authenticate('jwt', { session: false }),
+  thankReview,
 );
 
 export default router;

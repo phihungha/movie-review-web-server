@@ -171,3 +171,53 @@ export async function deleteReview(
     }
   }
 }
+
+export async function thankReview(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const reviewId = +req.params.id;
+  const user = req.user as User;
+
+  const result = await prismaClient.$transaction(async (client) => {
+    const review = await client.review.findUnique({
+      where: {
+        id: reviewId,
+      },
+      include: {
+        thankUsers: {
+          where: {
+            id: user.id,
+          },
+        },
+      },
+    });
+
+    if (!review) {
+      return next(new HttpNotFoundError('Review not found'));
+    }
+
+    if (review.thankUsers.length === 0) {
+      return await client.review.update({
+        where: {
+          id: reviewId,
+        },
+        data: {
+          thankUsers: { connect: { id: user.id } },
+          thankCount: { increment: 1 },
+        },
+      });
+    }
+    return await client.review.update({
+      where: {
+        id: reviewId,
+      },
+      data: {
+        thankUsers: { disconnect: { id: user.id } },
+        thankCount: { decrement: 1 },
+      },
+    });
+  });
+  res.json(result);
+}

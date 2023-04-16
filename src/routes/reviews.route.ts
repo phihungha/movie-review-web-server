@@ -4,6 +4,7 @@ import {
   deleteReview,
   updateReview,
   getReview,
+  thankReview,
 } from '../controllers/reviews.controller';
 import { param } from 'express-validator';
 import passport from 'passport';
@@ -26,6 +27,14 @@ router.delete(
   validationErrorHandler,
   passport.authenticate('jwt', { session: false }),
   deleteReview,
+);
+
+router.put(
+  '/:id/thank',
+  param('id').toInt(),
+  validationErrorHandler,
+  passport.authenticate('jwt', { session: false }),
+  thankReview,
 );
 
 export default router;
