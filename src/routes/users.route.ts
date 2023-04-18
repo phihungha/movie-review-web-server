@@ -3,6 +3,7 @@ import { body, param } from 'express-validator';
 import {
   getReviewsOfUser,
   getThankedReviewsOfUser,
+  getUser,
   getViewedMoviesOfUser,
   signUp,
 } from '../controllers/users.controller';
@@ -31,6 +32,8 @@ router.post(
   validationErrorHandler,
   signUp,
 );
+
+router.get('/:id', param('id').toInt(), validationErrorHandler, getUser);
 
 router.get(
   '/:id/viewed-movies',
