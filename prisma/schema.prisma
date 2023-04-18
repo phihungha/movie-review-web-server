@@ -14,12 +14,12 @@ model User {
   id             Int          @id @default(autoincrement())
   username       String       @unique
   email          String       @unique
+  hashedPassword String
   name           String
-  gender         Gender
-  birthDate      DateTime
+  gender         Gender?
+  dateOfBirth    DateTime?
   criticUser     CriticUser?
   regularUser    RegularUser?
-  hashedPassword String
 
   reviews      Review[] @relation(name: "review-author")
   reviewThanks Review[] @relation(name: "review-thanks")
