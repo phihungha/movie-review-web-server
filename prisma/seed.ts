@@ -1,4 +1,4 @@
-import { Gender, PrismaClient } from '@prisma/client';
+import { Gender, PrismaClient, UserType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prismaClient = new PrismaClient();
@@ -14,9 +14,10 @@ async function main() {
           name: 'John User',
           username: 'john',
           email: 'john@gmail.com',
-          birthDate: new Date(1978, 5, 4),
+          dateOfBirth: new Date(1978, 5, 4),
           gender: Gender.Male,
           hashedPassword,
+          userType: UserType.Regular,
         },
       },
     },
@@ -29,9 +30,10 @@ async function main() {
           name: 'Katy User',
           username: 'katy',
           email: 'katy@gmail.com',
-          birthDate: new Date(2002, 1, 10),
+          dateOfBirth: new Date(2002, 1, 10),
           gender: Gender.Female,
           hashedPassword,
+          userType: UserType.Regular,
         },
       },
     },
@@ -45,9 +47,10 @@ async function main() {
           name: 'Roger Ebert',
           username: 'ebert',
           email: 'ebert@gmail.com',
-          birthDate: new Date(1971, 1, 4),
+          dateOfBirth: new Date(1971, 1, 4),
           gender: Gender.Male,
           hashedPassword,
+          userType: UserType.Critic,
         },
       },
     },
@@ -119,6 +122,10 @@ async function main() {
       criticReviewCount: 1,
       userScore: 8.5,
       criticScore: 9,
+      viewedUsers: {
+        connect: [{ id: regular1.id }, { id: regular2.id }, { id: critic1.id }],
+      },
+      viewedUserCount: 3,
     },
   });
 
@@ -136,12 +143,17 @@ async function main() {
       criticReviewCount: 1,
       userScore: 9,
       criticScore: 8,
+      viewedUsers: {
+        connect: [{ id: critic1.id }],
+      },
+      viewedUserCount: 1,
     },
   });
 
   await prismaClient.review.create({
     data: {
       authorId: regular1.id,
+      authorType: UserType.Regular,
       movieId: movie1.id,
       title: 'Very good film',
       score: 9,
@@ -154,6 +166,7 @@ async function main() {
   await prismaClient.review.create({
     data: {
       authorId: regular2.id,
+      authorType: UserType.Regular,
       movieId: movie1.id,
       title: 'Good',
       score: 8,
@@ -165,6 +178,7 @@ async function main() {
   await prismaClient.review.create({
     data: {
       authorId: critic1.id,
+      authorType: UserType.Critic,
       movieId: movie1.id,
       title: 'Best movie ever',
       score: 8,
@@ -177,6 +191,7 @@ async function main() {
   await prismaClient.review.create({
     data: {
       authorId: critic1.id,
+      authorType: UserType.Critic,
       movieId: movie2.id,
       title: 'Entertaining',
       score: 8,

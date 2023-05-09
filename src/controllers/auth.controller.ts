@@ -1,9 +1,10 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { prismaClient } from '../db';
 import * as bcrypt from 'bcrypt';
+import { HttpForbiddenError } from '../http-errors';
 
-export async function login(req: Request, res: Response) {
+export async function login(req: Request, res: Response, next: NextFunction) {
   const username = req.body.username;
   const password = req.body.password;
   const users = await prismaClient.user.findMany({
@@ -13,19 +14,13 @@ export async function login(req: Request, res: Response) {
   });
 
   if (users.length === 0) {
-    res
-      .status(403)
-      .json({ errors: [{ message: 'Username or password is incorrect' }] });
-    return;
+    return next(new HttpForbiddenError('Username or password is incorrect'));
   }
 
   const user = users[0];
 
   if (!(await bcrypt.compare(password, user.hashedPassword))) {
-    res
-      .status(403)
-      .json({ errors: [{ message: 'Username or password is incorrect' }] });
-    return;
+    return next(new HttpForbiddenError('Username or password is incorrect'));
   }
 
   const jwtPayload = { username: user.username, sub: user.id };

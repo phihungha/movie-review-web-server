@@ -1,4 +1,7 @@
 -- CreateEnum
+CREATE TYPE "UserType" AS ENUM ('Regular', 'Critic');
+
+-- CreateEnum
 CREATE TYPE "Gender" AS ENUM ('Male', 'Female', 'Other');
 
 -- CreateTable
@@ -6,10 +9,11 @@ CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
     "username" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "gender" "Gender" NOT NULL,
-    "birthDate" TIMESTAMP(3) NOT NULL,
     "hashedPassword" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "userType" "UserType" NOT NULL,
+    "gender" "Gender",
+    "dateOfBirth" TIMESTAMP(3),
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -67,10 +71,11 @@ CREATE TABLE "Movie" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "releaseDate" TIMESTAMP(3) NOT NULL,
-    "userScore" DOUBLE PRECISION NOT NULL,
-    "userReviewCount" INTEGER NOT NULL,
-    "criticScore" DOUBLE PRECISION NOT NULL,
-    "criticReviewCount" INTEGER NOT NULL,
+    "userScore" DOUBLE PRECISION,
+    "userReviewCount" INTEGER NOT NULL DEFAULT 0,
+    "criticScore" DOUBLE PRECISION,
+    "criticReviewCount" INTEGER NOT NULL DEFAULT 0,
+    "viewedUserCount" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Movie_pkey" PRIMARY KEY ("id")
 );
@@ -79,6 +84,7 @@ CREATE TABLE "Movie" (
 CREATE TABLE "Review" (
     "id" SERIAL NOT NULL,
     "authorId" INTEGER NOT NULL,
+    "authorType" "UserType" NOT NULL,
     "movieId" INTEGER NOT NULL,
     "title" TEXT NOT NULL,
     "postTime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
