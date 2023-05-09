@@ -16,6 +16,7 @@ model User {
   email          String       @unique
   hashedPassword String
   name           String
+  userType       UserType
   gender         Gender?
   dateOfBirth    DateTime?
   criticUser     CriticUser?
@@ -24,6 +25,11 @@ model User {
   reviews      Review[] @relation(name: "review-author")
   reviewThanks Review[] @relation(name: "review-thanks")
   viewedMovies Movie[]
+}
+
+enum UserType {
+  Regular
+  Critic
 }
 
 enum Gender {
@@ -102,11 +108,12 @@ model Movie {
 }
 
 model Review {
-  id       Int   @id @default(autoincrement())
-  author   User  @relation(name: "review-author", fields: [authorId], references: [id])
-  authorId Int
-  movie    Movie @relation(fields: [movieId], references: [id])
-  movieId  Int
+  id         Int      @id @default(autoincrement())
+  author     User     @relation(name: "review-author", fields: [authorId], references: [id])
+  authorId   Int
+  authorType UserType
+  movie      Movie    @relation(fields: [movieId], references: [id])
+  movieId    Int
 
   title    String
   postTime DateTime @default(now())

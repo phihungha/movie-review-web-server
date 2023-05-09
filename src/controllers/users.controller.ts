@@ -3,7 +3,7 @@ import { getReviewsByUserId } from '../data/users.data';
 import { getViewedMoviesByUserId } from '../data/users.data';
 import { getThankedReviewsByUserId } from '../data/users.data';
 import { HttpBadRequest, HttpNotFoundError } from '../http-errors';
-import { Gender, Prisma } from '@prisma/client';
+import { Gender, Prisma, UserType, User } from '@prisma/client';
 import { prismaClient } from '../db';
 import * as bcrypt from 'bcrypt';
 
@@ -43,6 +43,7 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
         name,
         gender,
         dateOfBirth,
+        userType: type === 'Regular' ? UserType.Regular : UserType.Critic,
         regularUser: type === 'Regular' ? { create: {} } : undefined,
         criticUser: type === 'Critic' ? { create: { blogUrl } } : undefined,
       },

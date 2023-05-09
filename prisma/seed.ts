@@ -1,4 +1,4 @@
-import { Gender, PrismaClient } from '@prisma/client';
+import { Gender, PrismaClient, UserType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prismaClient = new PrismaClient();
@@ -17,6 +17,7 @@ async function main() {
           dateOfBirth: new Date(1978, 5, 4),
           gender: Gender.Male,
           hashedPassword,
+          userType: UserType.Regular,
         },
       },
     },
@@ -32,6 +33,7 @@ async function main() {
           dateOfBirth: new Date(2002, 1, 10),
           gender: Gender.Female,
           hashedPassword,
+          userType: UserType.Regular,
         },
       },
     },
@@ -48,6 +50,7 @@ async function main() {
           dateOfBirth: new Date(1971, 1, 4),
           gender: Gender.Male,
           hashedPassword,
+          userType: UserType.Critic,
         },
       },
     },
@@ -150,6 +153,7 @@ async function main() {
   await prismaClient.review.create({
     data: {
       authorId: regular1.id,
+      authorType: UserType.Regular,
       movieId: movie1.id,
       title: 'Very good film',
       score: 9,
@@ -162,6 +166,7 @@ async function main() {
   await prismaClient.review.create({
     data: {
       authorId: regular2.id,
+      authorType: UserType.Regular,
       movieId: movie1.id,
       title: 'Good',
       score: 8,
@@ -173,6 +178,7 @@ async function main() {
   await prismaClient.review.create({
     data: {
       authorId: critic1.id,
+      authorType: UserType.Critic,
       movieId: movie1.id,
       title: 'Best movie ever',
       score: 8,
@@ -185,6 +191,7 @@ async function main() {
   await prismaClient.review.create({
     data: {
       authorId: critic1.id,
+      authorType: UserType.Critic,
       movieId: movie2.id,
       title: 'Entertaining',
       score: 8,

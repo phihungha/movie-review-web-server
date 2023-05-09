@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { prismaClient } from '../db';
-import { User } from '@prisma/client';
+import { Movie, PrismaClient, Review, User, UserType } from '@prisma/client';
 import { HttpNotFoundError } from '../http-errors';
 import { Prisma } from '@prisma/client';
 
@@ -81,6 +81,47 @@ export async function getReview(
   }
 }
 
+async function updateReviewScore(
+  review: Review,
+  authorType: UserType,
+  prismaClient: any,
+) {
+  const reviewAggregates = await prismaClient.review.aggregate({
+    _avg: {
+      score: true,
+    },
+    _count: {
+      id: true,
+    },
+    where: {
+      movieId: review.movieId,
+      authorType,
+    },
+  });
+  const averageScore = reviewAggregates._avg.score;
+  const reviewCount = reviewAggregates._count.id;
+
+  let reviewUpdateData;
+  if (authorType === UserType.Regular) {
+    reviewUpdateData = {
+      userScore: averageScore,
+      userReviewCount: reviewCount,
+    };
+  } else {
+    reviewUpdateData = {
+      criticScore: averageScore,
+      criticReviewCount: reviewCount,
+    };
+  }
+
+  await prismaClient.movie.update({
+    where: {
+      id: review.movieId,
+    },
+    data: reviewUpdateData,
+  });
+}
+
 export async function postReviewOfMovie(
   req: Request,
   res: Response,
@@ -92,27 +133,32 @@ export async function postReviewOfMovie(
   const content = req.body.content;
   const score = req.body.score as number;
 
-  try {
-    const result = await prismaClient.review.create({
-      data: {
-        author: { connect: { id: author.id } },
-        movie: { connect: { id: movieId } },
-        title,
-        content,
-        score,
-      },
-    });
-    res.json(result);
-  } catch (err) {
-    if (
-      err instanceof Prisma.PrismaClientKnownRequestError &&
-      err.code === 'P2025'
-    ) {
-      next(new HttpNotFoundError('Movie not found'));
-    } else {
-      next(err);
+  const newReview = await prismaClient.$transaction(async (client) => {
+    try {
+      const review = await client.review.create({
+        data: {
+          author: { connect: { id: author.id } },
+          authorType: author.userType,
+          movie: { connect: { id: movieId } },
+          title,
+          content,
+          score,
+        },
+      });
+      await updateReviewScore(review, review.authorType, client);
+      res.json(review);
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2025'
+      ) {
+        next(new HttpNotFoundError('Movie not found'));
+      } else {
+        next(err);
+      }
     }
-  }
+  });
+  return newReview;
 }
 
 export async function updateReview(
@@ -153,23 +199,28 @@ export async function deleteReview(
   next: NextFunction,
 ) {
   const reviewId = +req.params.id;
-  try {
-    const result = await prismaClient.review.delete({
-      where: {
-        id: reviewId,
-      },
-    });
-    res.json(result);
-  } catch (err) {
-    if (
-      err instanceof Prisma.PrismaClientKnownRequestError &&
-      err.code === 'P2025'
-    ) {
-      next(new HttpNotFoundError('Review not found'));
-    } else {
-      next(err);
+
+  const deletedReview = await prismaClient.$transaction(async (client) => {
+    try {
+      const review = await client.review.delete({
+        where: {
+          id: reviewId,
+        },
+      });
+      await updateReviewScore(review, review.authorType, client);
+      res.json(review);
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2025'
+      ) {
+        next(new HttpNotFoundError('Review not found'));
+      } else {
+        next(err);
+      }
     }
-  }
+  });
+  return deletedReview;
 }
 
 export async function thankReview(

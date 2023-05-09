@@ -1,4 +1,7 @@
 -- CreateEnum
+CREATE TYPE "UserType" AS ENUM ('Regular', 'Critic');
+
+-- CreateEnum
 CREATE TYPE "Gender" AS ENUM ('Male', 'Female', 'Other');
 
 -- CreateTable
@@ -8,6 +11,7 @@ CREATE TABLE "User" (
     "email" TEXT NOT NULL,
     "hashedPassword" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "userType" "UserType" NOT NULL,
     "gender" "Gender",
     "dateOfBirth" TIMESTAMP(3),
 
@@ -80,6 +84,7 @@ CREATE TABLE "Movie" (
 CREATE TABLE "Review" (
     "id" SERIAL NOT NULL,
     "authorId" INTEGER NOT NULL,
+    "authorType" "UserType" NOT NULL,
     "movieId" INTEGER NOT NULL,
     "title" TEXT NOT NULL,
     "postTime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
