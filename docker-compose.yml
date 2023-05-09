@@ -1,6 +1,6 @@
 services:
   express-api-server:
-    container_name: express-api-server
+    container_name: mrw-express-api-server
     build:
       context: .
       dockerfile: Dockerfile
@@ -12,7 +12,7 @@ services:
       - postgres-db
 
   postgres-db:
-    container_name: postgres-db
+    container_name: mrw-postgres-db
     image: postgres:15
     ports:
       - 5432:5432
