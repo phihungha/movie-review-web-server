@@ -13,6 +13,7 @@ datasource db {
 model User {
   id             Int          @id @default(autoincrement())
   username       String       @unique
+  avatarUrl      String?
   email          String       @unique
   hashedPassword String
   name           String
@@ -65,6 +66,7 @@ model Company {
 model CrewMember {
   id             Int            @id @default(autoincrement())
   name           String
+  avatarUrl      String?
   directedMovies Movie[]        @relation(name: "director")
   writtenMovies  Movie[]        @relation(name: "writer")
   dopMovies      Movie[]        @relation(name: "dop")
@@ -86,6 +88,7 @@ model ActingCredit {
 model Movie {
   id                    Int       @id @default(autoincrement())
   title                 String
+  posterUrl             String?
   releaseDate           DateTime
   genres                Genre[]
   productionCompanies   Company[] @relation(name: "production-company")
