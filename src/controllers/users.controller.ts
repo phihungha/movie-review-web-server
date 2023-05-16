@@ -3,53 +3,77 @@ import { getReviewsByUserId } from '../data/users.data';
 import { getViewedMoviesByUserId } from '../data/users.data';
 import { getThankedReviewsByUserId } from '../data/users.data';
 import { HttpBadRequest, HttpNotFoundError } from '../http-errors';
-import { Gender, Prisma, UserType, User } from '@prisma/client';
+import { Gender, Prisma, UserType } from '@prisma/client';
 import { prismaClient } from '../db';
 import * as bcrypt from 'bcrypt';
+
+function getGenderFromReqParam(genderParam: any): Gender | undefined {
+  switch (genderParam as 'male' | 'female' | 'other' | undefined) {
+    case 'male':
+      return Gender.Male;
+    case 'female':
+      return Gender.Female;
+    case 'other':
+      return Gender.Other;
+    case undefined:
+      return undefined;
+    default:
+      throw new Error('Invalid gender param value');
+  }
+}
+
+function getUserTypeFromReqParam(typeParam: any): UserType {
+  switch (typeParam) {
+    case 'regular':
+      return UserType.Regular;
+    case 'critic':
+      return UserType.Critic;
+    default:
+      throw new Error('Invalid user type param value');
+  }
+}
+
+async function generateHashedPassword(password: string): Promise<string> {
+  const salt = await bcrypt.genSalt();
+  return await bcrypt.hash(password, salt);
+}
 
 export async function signUp(req: Request, res: Response, next: NextFunction) {
   const username = req.body.username;
   const email = req.body.email;
-  const type = req.body.type as 'Regular' | 'Critic';
-  const password = req.body.password;
   const name = req.body.name;
   const dateOfBirth = req.body.dateOfBirth;
   const blogUrl = req.body.blogUrl;
+  const gender = getGenderFromReqParam(req.body.gender);
+  const newHashedPassword = await generateHashedPassword(req.body.password);
+  const userType = getUserTypeFromReqParam(req.body.type);
 
-  let gender: Gender | undefined;
-  switch (req.body.gender as 'male' | 'female' | 'other' | undefined) {
-    case 'male':
-      gender = Gender.Male;
-      break;
-    case 'female':
-      gender = Gender.Female;
-      break;
-    case 'other':
-      gender = Gender.Other;
-      break;
-    default:
-      gender = undefined;
+  let userTypeData;
+  if (userType === UserType.Critic) {
+    userTypeData = {
+      criticUser: { create: { blogUrl } },
+    };
+  } else {
+    userTypeData = {
+      regularUser: { create: {} },
+    };
   }
-
-  const salt = await bcrypt.genSalt();
-  const hashedNewPassword = await bcrypt.hash(password, salt);
 
   try {
     const result = await prismaClient.user.create({
       data: {
         username,
         email,
-        hashedPassword: hashedNewPassword,
+        hashedPassword: newHashedPassword,
         name,
         gender,
         dateOfBirth,
-        userType: type === 'Regular' ? UserType.Regular : UserType.Critic,
-        regularUser: type === 'Regular' ? { create: {} } : undefined,
-        criticUser: type === 'Critic' ? { create: { blogUrl } } : undefined,
+        userType,
+        ...userTypeData,
       },
     });
     const { hashedPassword, ...sanitizedResult } = result;
-    res.json({ sanitizedResult });
+    res.json(sanitizedResult);
   } catch (err) {
     if (
       err instanceof Prisma.PrismaClientKnownRequestError &&
@@ -75,6 +99,64 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
 
   const { hashedPassword, ...sanitizedResult } = result;
   res.json(sanitizedResult);
+}
+
+export async function updateUser(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const userId = +req.params.id;
+  const username = req.body.username;
+  const email = req.body.email;
+  const name = req.body.name;
+  const dateOfBirth = req.body.dateOfBirth;
+  const blogUrl = req.body.blogUrl;
+  const gender = getGenderFromReqParam(req.body.gender);
+
+  let newHashedPassword;
+  if (req.body.password) {
+    newHashedPassword = await generateHashedPassword(req.body.password);
+  }
+
+  let userTypeData;
+  if (blogUrl) {
+    userTypeData = {
+      criticUser: {
+        update: { blogUrl },
+      },
+    };
+  }
+
+  try {
+    const result = await prismaClient.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        username,
+        email,
+        hashedPassword: newHashedPassword,
+        name,
+        gender,
+        dateOfBirth,
+        ...userTypeData,
+      },
+    });
+    const { hashedPassword, ...sanitizedResult } = result;
+    res.json(sanitizedResult);
+  } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === 'P2025'
+    ) {
+      next(
+        new HttpNotFoundError("User not found or user type doesn't support."),
+      );
+    } else {
+      next(err);
+    }
+  }
 }
 
 export async function getViewedMoviesOfUser(

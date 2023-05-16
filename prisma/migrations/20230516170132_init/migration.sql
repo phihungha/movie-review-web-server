@@ -8,6 +8,7 @@ CREATE TYPE "Gender" AS ENUM ('Male', 'Female', 'Other');
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
     "username" TEXT NOT NULL,
+    "avatarUrl" TEXT,
     "email" TEXT NOT NULL,
     "hashedPassword" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -53,6 +54,7 @@ CREATE TABLE "Company" (
 CREATE TABLE "CrewMember" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
+    "avatarUrl" TEXT,
 
     CONSTRAINT "CrewMember_pkey" PRIMARY KEY ("id")
 );
@@ -70,6 +72,7 @@ CREATE TABLE "ActingCredit" (
 CREATE TABLE "Movie" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
+    "posterUrl" TEXT,
     "releaseDate" TIMESTAMP(3) NOT NULL,
     "userScore" DOUBLE PRECISION,
     "userReviewCount" INTEGER NOT NULL DEFAULT 0,
