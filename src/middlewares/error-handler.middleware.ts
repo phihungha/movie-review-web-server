@@ -5,6 +5,7 @@ export default function errorHandler(
   err: Error,
   req: Request,
   res: Response,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   next: NextFunction,
 ) {
   const errors = { errors: [{ name: err.name, msg: err.message }] };

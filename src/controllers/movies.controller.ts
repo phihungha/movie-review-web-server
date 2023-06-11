@@ -22,7 +22,7 @@ export async function getMovieDetails(req: Request, res: Response) {
     include: {
       directors: true,
       writers: true,
-      actors: true,
+      actingCredits: true,
       dops: true,
       editors: true,
       composers: true,

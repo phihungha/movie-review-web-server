@@ -9,7 +9,7 @@ export async function getViewedMoviesByUserId(userId: number) {
       viewedMovies: true,
     },
   });
-  return result ? result.viewedMovies : null;
+  return result?.viewedMovies;
 }
 
 export async function getReviewsByUserId(userId: number) {
@@ -21,7 +21,7 @@ export async function getReviewsByUserId(userId: number) {
       reviews: true,
     },
   });
-  return result ? result.reviews : null;
+  return result?.reviews;
 }
 
 export async function getThankedReviewsByUserId(userId: number) {
@@ -33,5 +33,5 @@ export async function getThankedReviewsByUserId(userId: number) {
       reviewThanks: true,
     },
   });
-  return result ? result.reviewThanks : null;
+  return result?.reviewThanks;
 }

@@ -1,210 +1,438 @@
-import { Gender, PrismaClient, UserType } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import { PrismaClient, UserType, Gender } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
-const prismaClient = new PrismaClient();
+const prisma = new PrismaClient();
+
+async function createCrewMember(name: string, avatarUrl?: string) {
+  return await prisma.crewMember.create({
+    data: {
+      name,
+      avatarUrl,
+    },
+  });
+}
+
+async function createCompany(name: string) {
+  return await prisma.company.create({
+    data: {
+      name,
+    },
+  });
+}
 
 async function main() {
-  const salt = await bcrypt.genSalt();
+  const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash('12345678', salt);
 
-  const regular1 = await prismaClient.regularUser.create({
+  // Create users
+  const johnRegular = await prisma.user.create({
     data: {
-      user: {
-        create: {
-          name: 'John User',
-          username: 'john',
-          email: 'john@gmail.com',
-          dateOfBirth: new Date(1978, 5, 4),
-          gender: Gender.Male,
-          hashedPassword,
-          userType: UserType.Regular,
-        },
-      },
+      username: 'john',
+      avatarUrl:
+        'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/userProfileImages/2.webp',
+      email: 'john@gmail.com',
+      hashedPassword,
+      name: 'John Xina',
+      userType: UserType.Regular,
+      gender: Gender.Male,
+      dateOfBirth: new Date(1995, 3, 4),
+      regularUser: { create: {} },
     },
   });
 
-  const regular2 = await prismaClient.regularUser.create({
+  const janeRegular = await prisma.user.create({
     data: {
-      user: {
-        create: {
-          name: 'Katy User',
-          username: 'katy',
-          email: 'katy@gmail.com',
-          dateOfBirth: new Date(2002, 1, 10),
-          gender: Gender.Female,
-          hashedPassword,
-          userType: UserType.Regular,
-        },
-      },
+      username: 'jane',
+      avatarUrl:
+        'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/userProfileImages/3.webp',
+      email: 'jane@gmail.com',
+      hashedPassword,
+      name: 'Jane Sauna',
+      userType: UserType.Regular,
+      gender: Gender.Female,
+      dateOfBirth: new Date(2002, 1, 1),
+      regularUser: { create: {} },
     },
   });
 
-  const critic1 = await prismaClient.criticUser.create({
+  const michikoRegular = await prisma.user.create({
     data: {
-      blogUrl: 'www.rogereberts.com',
-      user: {
-        create: {
-          name: 'Roger Ebert',
-          username: 'ebert',
-          email: 'ebert@gmail.com',
-          dateOfBirth: new Date(1971, 1, 4),
-          gender: Gender.Male,
-          hashedPassword,
-          userType: UserType.Critic,
-        },
-      },
+      username: 'michiko',
+      email: 'michiko@gmail.com',
+      hashedPassword,
+      name: 'Michiko Oumae',
+      userType: UserType.Regular,
+      dateOfBirth: new Date(1986, 3, 9),
+      regularUser: { create: {} },
     },
   });
 
-  await prismaClient.genre.createMany({
+  const hungRegular = await prisma.user.create({
+    data: {
+      username: 'hung',
+      avatarUrl:
+        'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/userProfileImages/4.webp',
+      email: 'hung@gmail.com',
+      hashedPassword,
+      name: 'Hà Phi Hùng',
+      userType: UserType.Regular,
+      gender: Gender.Male,
+      dateOfBirth: new Date(2002, 5, 5),
+      regularUser: { create: {} },
+    },
+  });
+
+  const thanosRegular = await prisma.user.create({
+    data: {
+      username: 'thanos',
+      avatarUrl: 'aws-s3/abcd',
+      email: 'thanos@gmail.com',
+      hashedPassword,
+      name: 'Nguyễn Thị Thanos',
+      userType: UserType.Regular,
+      dateOfBirth: new Date(1995, 2, 14),
+      regularUser: { create: {} },
+    },
+  });
+
+  const ebertCritic = await prisma.user.create({
+    data: {
+      username: 'ebert',
+      avatarUrl:
+        'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/userProfileImages/1.webp',
+      email: 'ebert@gmail.com',
+      hashedPassword,
+      name: 'Roger Ebert',
+      userType: UserType.Critic,
+      gender: Gender.Male,
+      dateOfBirth: new Date(1942, 6, 18),
+      criticUser: { create: { blogUrl: 'rogerebert.com' } },
+    },
+  });
+
+  const kermodeCritic = await prisma.user.create({
+    data: {
+      username: 'kemode',
+      avatarUrl:
+        'https://filmnewforest.com/wp-content/uploads/2019/02/Mark-Kermode-image-2018-JE-200x300.jpg',
+      email: 'kemode@gmail.com',
+      hashedPassword,
+      name: 'Mark Kemode',
+      userType: UserType.Critic,
+      gender: Gender.Male,
+      dateOfBirth: new Date(1963, 7, 2),
+      criticUser: { create: { blogUrl: 'markkermode.co.uk' } },
+    },
+  });
+
+  // Create movie genres
+  await prisma.genre.createMany({
     data: [
-      {
-        name: 'Sci-fi',
-      },
-      {
-        name: 'Thriller',
-      },
-      {
-        name: 'Crime',
-      },
+      { name: 'Action' },
+      { name: 'Animation' },
+      { name: 'Comedy' },
+      { name: 'Crime' },
+      { name: 'Drama' },
+      { name: 'Fantasy' },
+      { name: 'Sci-Fi' },
+      { name: 'Romance' },
+      { name: 'Thriller' },
+      { name: 'Psychological' },
+      { name: 'Biography' },
     ],
   });
 
-  await prismaClient.company.createMany({
-    data: [
-      {
-        name: 'Warner Bros',
-      },
-      {
-        name: 'TriBeCa Productions',
-      },
-      {
-        name: 'Legendary',
-      },
-      {
-        name: 'Netflix',
-      },
-    ],
-  });
+  // Create companies
+  const syncopyCorp = await createCompany('Syncopy Inc');
+  const legendaryCorp = await createCompany('Legendary Pictures');
+  const warnerBrosCorp = await createCompany('Warner Bros. Pictures');
 
-  const scorsese = await prismaClient.crewMember.create({
-    data: { name: 'Martin Scorsese' },
-  });
-
-  const zaillian = await prismaClient.crewMember.create({
-    data: { name: 'Steven Zaillian' },
-  });
-
-  const niro = await prismaClient.crewMember.create({
-    data: { name: 'Robert De Niro' },
-  });
-
-  const villeneuve = await prismaClient.crewMember.create({
-    data: { name: 'Denis Villeneuve' },
-  });
-
-  const movie1 = await prismaClient.movie.create({
+  // Create movies
+  const nolanDirector = await createCrewMember(
+    'Christopher Nolan',
+    'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/crewProfileImages/christopher-nolan-1.webp',
+  );
+  const hoytemaDop = await createCrewMember(
+    'Hoyte van Hoytema',
+    'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/crewProfileImages/hoyte-van-hoytema-1.webp',
+  );
+  const lameEditor = await createCrewMember(
+    'Jennifer Lame',
+    'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/crewProfileImages/jennifer-lame-1.webp',
+  );
+  const goranssonComposer = await createCrewMember(
+    'Ludwig Göransson',
+    'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/crewProfileImages/ludwig-goransson-1.webp',
+  );
+  const washingtonActor = await createCrewMember(
+    'John David Washington',
+    'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/crewProfileImages/john-david-washington-1.webp',
+  );
+  const pattingsonActor = await createCrewMember(
+    'Robert Pattinson',
+    'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/crewProfileImages/robert-pattingson-1.webp',
+  );
+  const caneActor = await createCrewMember('Michael Caine');
+  const tenet = await prisma.movie.create({
     data: {
-      title: 'The Irishman',
-      releaseDate: new Date(2019, 9, 27),
-      genres: { connect: [{ name: 'Crime' }, { name: 'Thriller' }] },
-      productionCompanies: { connect: { name: 'TriBeCa Productions' } },
-      distributionCompanies: { connect: { name: 'Netflix' } },
-      directors: { connect: { id: scorsese.id } },
-      writers: { connect: { id: zaillian.id } },
-      actors: {
-        create: {
-          crew: { connect: { id: niro.id } },
-          characterName: 'Frank Sheeran',
+      title: 'Tenet',
+      posterUrl:
+        'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/moviePosters/tenet-2020-1.webp',
+      releaseDate: new Date(2020, 9, 3),
+      runningTime: 9000,
+      genres: {
+        connect: [{ name: 'Sci-Fi' }, { name: 'Action' }, { name: 'Thriller' }],
+      },
+
+      productionCompanies: {
+        connect: [{ id: warnerBrosCorp.id }, { id: syncopyCorp.id }],
+      },
+      distributionCompanies: {
+        connect: [{ id: warnerBrosCorp.id }],
+      },
+
+      directors: { connect: [{ id: nolanDirector.id }] },
+      writers: { connect: [{ id: nolanDirector.id }] },
+      dops: { connect: [{ id: hoytemaDop.id }] },
+      editors: { connect: [{ id: lameEditor.id }] },
+      composers: { connect: [{ id: goranssonComposer.id }] },
+      actingCredits: {
+        createMany: {
+          data: [
+            { crewId: washingtonActor.id, characterName: 'Protagonist' },
+            {
+              crewId: pattingsonActor.id,
+              characterName: 'Neil',
+            },
+            { crewId: caneActor.id, characterName: 'Sir Michael Crosby' },
+          ],
         },
       },
-      userReviewCount: 2,
-      criticReviewCount: 1,
-      userScore: 8.5,
-      criticScore: 9,
-      viewedUsers: {
-        connect: [{ id: regular1.id }, { id: regular2.id }, { id: critic1.id }],
-      },
-      viewedUserCount: 3,
+
+      regularScore: 6.6,
+      regularReviewCount: 3,
+      criticScore: 6.5,
+      criticReviewCount: 2,
     },
   });
 
-  const movie2 = await prismaClient.movie.create({
+  const villeneuveDirector = await createCrewMember(
+    'Denis Villeneuve',
+    'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/crewProfileImages/denis-villeneuve-1.webp',
+  );
+  const spaihtsWriter = await createCrewMember(
+    'Jon Spaihts',
+    'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/crewProfileImages/jon-spaihts-1.webp',
+  );
+  const fraserDop = await createCrewMember(
+    'Greig Fraser',
+    'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/crewProfileImages/greig-fraser-1.webp',
+  );
+  const walkerEditor = await createCrewMember(
+    'Joe Walker',
+    'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/crewProfileImages/joe-walker-1.webp',
+  );
+  const zimmerComposer = await createCrewMember(
+    'Hans Zimmer',
+    'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/crewProfileImages/hans-zimmer-1.webp',
+  );
+  const fergusonActor = await createCrewMember('Rebecca Ferguson');
+  const zandayaActor = await createCrewMember('Zendaya');
+  const chalametActor = await createCrewMember(
+    'Timothée Chalamet',
+    'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/crewProfileImages/timothee-chalamet-1.webp',
+  );
+  const dune = await prisma.movie.create({
     data: {
       title: 'Dune',
+      posterUrl:
+        'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/moviePosters/dune-2021-1.webp',
       releaseDate: new Date(2021, 10, 22),
-      genres: { connect: { name: 'Sci-fi' } },
+      runningTime: 9360,
+      genres: {
+        connect: [{ name: 'Sci-Fi' }, { name: 'Drama' }],
+      },
+
       productionCompanies: {
-        connect: [{ name: 'Legendary' }, { name: 'Warner Bros' }],
+        connect: [{ id: warnerBrosCorp.id }, { id: legendaryCorp.id }],
       },
-      distributionCompanies: { connect: { name: 'Warner Bros' } },
-      directors: { connect: { id: villeneuve.id } },
-      userReviewCount: 0,
-      criticReviewCount: 1,
-      userScore: 9,
+      distributionCompanies: {
+        connect: [{ id: warnerBrosCorp.id }],
+      },
+
+      directors: { connect: [{ id: villeneuveDirector.id }] },
+      writers: {
+        connect: [{ id: villeneuveDirector.id }, { id: spaihtsWriter.id }],
+      },
+      dops: { connect: [{ id: fraserDop.id }] },
+      editors: { connect: [{ id: walkerEditor.id }] },
+      composers: { connect: [{ id: zimmerComposer.id }] },
+      actingCredits: {
+        createMany: {
+          data: [
+            { crewId: chalametActor.id, characterName: 'Paul Atreides' },
+            {
+              crewId: zandayaActor.id,
+              characterName: 'Chani',
+            },
+            { crewId: fergusonActor.id, characterName: 'Lady Jessica' },
+          ],
+        },
+      },
+
+      regularScore: 9,
+      regularReviewCount: 3,
       criticScore: 8,
-      viewedUsers: {
-        connect: [{ id: critic1.id }],
+      criticReviewCount: 1,
+    },
+  });
+
+  // Create reviews
+  // Tenet
+  await prisma.review.create({
+    data: {
+      authorType: UserType.Regular,
+      author: { connect: { id: johnRegular.id } },
+      movie: { connect: { id: tenet.id } },
+      title: 'Over-complicated, way too long, and not all that exciting.',
+      content:
+        'It is a pretty good, entertaining movie, but often very confusing.',
+      score: 6,
+      thankUsers: {
+        connect: [
+          { id: janeRegular.id },
+          { id: michikoRegular.id },
+          { id: hungRegular.id },
+        ],
       },
-      viewedUserCount: 1,
+      thankCount: 3,
     },
   });
 
-  await prismaClient.review.create({
+  await prisma.review.create({
     data: {
-      authorId: regular1.id,
       authorType: UserType.Regular,
-      movieId: movie1.id,
-      title: 'Very good film',
+      author: { connect: { id: thanosRegular.id } },
+      movie: { connect: { id: tenet.id } },
+      title: 'This is peak cinema.',
+      content: "People that don't understand this movie is just stupid.",
       score: 9,
-      content: 'This film is peak fiction',
-      thankCount: 2,
-      thankUsers: { connect: [{ id: regular2.id }, { id: critic1.id }] },
-    },
-  });
-
-  await prismaClient.review.create({
-    data: {
-      authorId: regular2.id,
-      authorType: UserType.Regular,
-      movieId: movie1.id,
-      title: 'Good',
-      score: 8,
-      content: 'OK film I guess',
-      thankCount: 0,
-    },
-  });
-
-  await prismaClient.review.create({
-    data: {
-      authorId: critic1.id,
-      authorType: UserType.Critic,
-      movieId: movie1.id,
-      title: 'Best movie ever',
-      score: 8,
-      content: 'Martin Scorsese is at his best in this movie.',
+      thankUsers: { connect: [{ id: hungRegular.id }] },
       thankCount: 1,
-      thankUsers: { connect: { id: regular1.id } },
     },
   });
 
-  await prismaClient.review.create({
+  await prisma.review.create({
     data: {
-      authorId: critic1.id,
+      authorType: UserType.Regular,
+      author: { connect: { id: michikoRegular.id } },
+      movie: { connect: { id: tenet.id } },
+      title: 'Terrible movie.',
+      content: 'Nolan was drunk when he was writing this script.',
+      score: 5,
+    },
+  });
+
+  await prisma.review.create({
+    data: {
       authorType: UserType.Critic,
-      movieId: movie2.id,
-      title: 'Entertaining',
-      score: 8,
-      content: 'A great blockbuster.',
+      author: { connect: { id: ebertCritic.id } },
+      movie: { connect: { id: tenet.id } },
+      title: 'Good for Nolan fans.',
+      content: `It is 100% designed as an experience for people who have unpacked films
+         like The Prestige and Memento late into the night, hoping to give Nolan fans
+         more to chew on than ever before.`,
+      score: 7,
+      externalUrl: 'https://www.rogerebert.com/reviews/tenet-movie-review-2020',
+    },
+  });
+
+  await prisma.review.create({
+    data: {
+      authorType: UserType.Critic,
+      author: { connect: { id: kermodeCritic.id } },
+      movie: { connect: { id: tenet.id } },
+      title: 'Tenet is an empty puzzle box.',
+      content: `Tenet is a locked puzzle box with nothing inside.`,
+      score: 6,
+      externalUrl:
+        'https://www.vulture.com/2020/08/tenet-movie-review-christopher-nolan-s-locked-puzzle-box.html',
+    },
+  });
+
+  // Dune
+  await prisma.review.create({
+    data: {
+      authorType: UserType.Regular,
+      author: { connect: { id: janeRegular.id } },
+      movie: { connect: { id: dune.id } },
+      title: 'A Great Modern Sci-Fi',
+      content: `Denis Villeneuve has accomplished what was considered impossible for decades,
+        to write and direct a faithful adaptation to the fantastic 1965 sci-fi novel by Frank Herbert.
+        And I'm here to tell you, he has done it, he has actually done it.`,
+      score: 9,
+      thankUsers: {
+        connect: [
+          { id: johnRegular.id },
+          { id: michikoRegular.id },
+          { id: hungRegular.id },
+          { id: thanosRegular.id },
+        ],
+      },
+      thankCount: 4,
+    },
+  });
+
+  await prisma.review.create({
+    data: {
+      authorType: UserType.Regular,
+      author: { connect: { id: thanosRegular.id } },
+      movie: { connect: { id: dune.id } },
+      title: 'My movie of 2021, so far',
+      content: `It's been amazing being back in cinemas after last year,
+        I have seen some good films, and some shockers,
+        this though, is the first great film of the year for me.`,
+      score: 10,
+      thankUsers: {
+        connect: [{ id: thanosRegular.id }, { id: johnRegular.id }],
+      },
       thankCount: 2,
-      thankUsers: { connect: [{ id: regular1.id }, { id: regular2.id }] },
+    },
+  });
+
+  await prisma.review.create({
+    data: {
+      authorType: UserType.Regular,
+      author: { connect: { id: michikoRegular.id } },
+      movie: { connect: { id: dune.id } },
+      title: 'A bit slow but good',
+      content: `This movie is quite slow but it focuses on
+      characters and world-building is out-of-this-world`,
+      score: 8,
+    },
+  });
+
+  await prisma.review.create({
+    data: {
+      authorType: UserType.Critic,
+      author: { connect: { id: kermodeCritic.id } },
+      movie: { connect: { id: dune.id } },
+      title: 'Why Dune endures.',
+      content: `Denis Villeneuve's new big-screen adaptation underlines
+        why generations have been fascinated by the story.`,
+      score: 8,
+      externalUrl:
+        'https://www.vox.com/22629441/dune-review-villeneuve-lynch-jodorowsky-herbert',
     },
   });
 }
 
 main()
-  .then(async () => await prismaClient.$disconnect())
+  .then(async () => {
+    await prisma.$disconnect();
+  })
   .catch(async (err) => {
     console.error(err);
-    await prismaClient.$disconnect();
+    await prisma.$disconnect();
+    process.exit(1);
   });

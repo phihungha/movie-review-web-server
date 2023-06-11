@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import { prismaClient } from '../db';
-import { Movie, PrismaClient, Review, User, UserType } from '@prisma/client';
+import { Review, User, UserType } from '@prisma/client';
 import { HttpNotFoundError } from '../http-errors';
-import { Prisma } from '@prisma/client';
+import { PrismaTxClient } from '../types';
+import { DbErrHandlerChain } from '../db-errors';
 
 export async function getReviewsOfMovie(
   req: Request,
@@ -81,10 +82,10 @@ export async function getReview(
   }
 }
 
-async function updateReviewScore(
+async function updateAggregateData(
   review: Review,
   authorType: UserType,
-  prismaClient: any,
+  prismaClient: PrismaTxClient,
 ) {
   const reviewAggregates = await prismaClient.review.aggregate({
     _avg: {
@@ -101,14 +102,14 @@ async function updateReviewScore(
   const averageScore = reviewAggregates._avg.score;
   const reviewCount = reviewAggregates._count.id;
 
-  let reviewUpdateData;
+  let updateData;
   if (authorType === UserType.Regular) {
-    reviewUpdateData = {
-      userScore: averageScore,
-      userReviewCount: reviewCount,
+    updateData = {
+      regularScore: averageScore,
+      regularReviewCount: reviewCount,
     };
   } else {
-    reviewUpdateData = {
+    updateData = {
       criticScore: averageScore,
       criticReviewCount: reviewCount,
     };
@@ -118,7 +119,7 @@ async function updateReviewScore(
     where: {
       id: review.movieId,
     },
-    data: reviewUpdateData,
+    data: updateData,
   });
 }
 
@@ -145,17 +146,10 @@ export async function postReviewOfMovie(
           score,
         },
       });
-      await updateReviewScore(review, review.authorType, client);
+      await updateAggregateData(review, review.authorType, client);
       res.json(review);
     } catch (err) {
-      if (
-        err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === 'P2025'
-      ) {
-        next(new HttpNotFoundError('Movie not found'));
-      } else {
-        next(err);
-      }
+      DbErrHandlerChain.new().notFound().handle(err, next);
     }
   });
   return newReview;
@@ -182,14 +176,7 @@ export async function updateReview(
     });
     res.json(result);
   } catch (err) {
-    if (
-      err instanceof Prisma.PrismaClientKnownRequestError &&
-      err.code === 'P2025'
-    ) {
-      next(new HttpNotFoundError('Review not found'));
-    } else {
-      next(err);
-    }
+    DbErrHandlerChain.new().notFound().handle(err, next);
   }
 }
 
@@ -207,17 +194,10 @@ export async function deleteReview(
           id: reviewId,
         },
       });
-      await updateReviewScore(review, review.authorType, client);
+      await updateAggregateData(review, review.authorType, client);
       res.json(review);
     } catch (err) {
-      if (
-        err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === 'P2025'
-      ) {
-        next(new HttpNotFoundError('Review not found'));
-      } else {
-        next(err);
-      }
+      DbErrHandlerChain.new().notFound().handle(err, next);
     }
   });
   return deletedReview;

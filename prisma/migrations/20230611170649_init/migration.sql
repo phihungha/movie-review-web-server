@@ -74,8 +74,9 @@ CREATE TABLE "Movie" (
     "title" TEXT NOT NULL,
     "posterUrl" TEXT,
     "releaseDate" TIMESTAMP(3) NOT NULL,
-    "userScore" DOUBLE PRECISION,
-    "userReviewCount" INTEGER NOT NULL DEFAULT 0,
+    "runningTime" INTEGER NOT NULL,
+    "regularScore" DOUBLE PRECISION,
+    "regularReviewCount" INTEGER NOT NULL DEFAULT 0,
     "criticScore" DOUBLE PRECISION,
     "criticReviewCount" INTEGER NOT NULL DEFAULT 0,
     "viewedUserCount" INTEGER NOT NULL DEFAULT 0,
@@ -93,6 +94,7 @@ CREATE TABLE "Review" (
     "postTime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "score" INTEGER NOT NULL,
     "content" TEXT NOT NULL,
+    "externalUrl" TEXT,
     "thankCount" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Review_pkey" PRIMARY KEY ("id")

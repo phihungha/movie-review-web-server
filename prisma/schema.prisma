@@ -90,24 +90,25 @@ model Movie {
   title                 String
   posterUrl             String?
   releaseDate           DateTime
+  runningTime           Int
   genres                Genre[]
   productionCompanies   Company[] @relation(name: "production-company")
   distributionCompanies Company[] @relation(name: "distribution-company")
 
-  directors CrewMember[]   @relation(name: "director")
-  writers   CrewMember[]   @relation(name: "writer")
-  dops      CrewMember[]   @relation(name: "dop")
-  editors   CrewMember[]   @relation(name: "editor")
-  composers CrewMember[]   @relation(name: "composer")
-  actors    ActingCredit[]
+  directors     CrewMember[]   @relation(name: "director")
+  writers       CrewMember[]   @relation(name: "writer")
+  dops          CrewMember[]   @relation(name: "dop")
+  editors       CrewMember[]   @relation(name: "editor")
+  composers     CrewMember[]   @relation(name: "composer")
+  actingCredits ActingCredit[]
 
-  reviews           Review[]
-  userScore         Float?
-  userReviewCount   Int      @default(0)
-  criticScore       Float?
-  criticReviewCount Int      @default(0)
-  viewedUsers       User[]
-  viewedUserCount   Int      @default(0)
+  reviews            Review[]
+  regularScore       Float?
+  regularReviewCount Int      @default(0)
+  criticScore        Float?
+  criticReviewCount  Int      @default(0)
+  viewedUsers        User[]
+  viewedUserCount    Int      @default(0)
 }
 
 model Review {
@@ -118,10 +119,11 @@ model Review {
   movie      Movie    @relation(fields: [movieId], references: [id])
   movieId    Int
 
-  title    String
-  postTime DateTime @default(now())
-  score    Int
-  content  String
+  title       String
+  postTime    DateTime @default(now())
+  score       Int
+  content     String
+  externalUrl String?
 
   thankUsers User[] @relation(name: "review-thanks")
   thankCount Int    @default(0)
