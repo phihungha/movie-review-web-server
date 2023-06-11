@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { prismaClient } from '../db';
+import { prismaClient } from '../api-clients';
 import * as bcrypt from 'bcrypt';
 import { HttpForbiddenError } from '../http-errors';
 

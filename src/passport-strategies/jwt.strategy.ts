@@ -1,5 +1,5 @@
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import { prismaClient } from '../db';
+import { prismaClient } from '../api-clients';
 import { HttpForbiddenError } from '../http-errors';
 
 const options = {

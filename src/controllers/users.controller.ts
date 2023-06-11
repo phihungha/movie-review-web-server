@@ -4,7 +4,7 @@ import { getViewedMoviesByUserId } from '../data/users.data';
 import { getThankedReviewsByUserId } from '../data/users.data';
 import { HttpNotFoundError } from '../http-errors';
 import { UserType } from '@prisma/client';
-import { prismaClient } from '../db';
+import { prismaClient } from '../api-clients';
 import { DbErrHandlerChain } from '../db-errors';
 import {
   generateHashedPassword,

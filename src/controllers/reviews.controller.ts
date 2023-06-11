@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { prismaClient } from '../db';
+import { prismaClient } from '../api-clients';
 import { Review, User, UserType } from '@prisma/client';
 import { HttpNotFoundError } from '../http-errors';
 import { PrismaTxClient } from '../types';

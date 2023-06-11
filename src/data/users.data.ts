@@ -1,4 +1,4 @@
-import { prismaClient } from '../db';
+import { prismaClient } from '../api-clients';
 
 export async function getViewedMoviesByUserId(userId: number) {
   const result = await prismaClient.user.findUnique({

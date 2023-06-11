@@ -5,7 +5,7 @@ import {
   getThankedReviewsByUserId,
   getViewedMoviesByUserId,
 } from '../data/users.data';
-import { prismaClient } from '../db';
+import { prismaClient } from '../api-clients';
 import { DbErrHandlerChain } from '../db-errors';
 import { generateHashedPassword, getGenderFromReqParam } from '../utils';
 
