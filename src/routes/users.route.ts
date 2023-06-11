@@ -32,8 +32,8 @@ router.post(
     .isBefore(calcLatestDateOfBirthAllowed())
     .toDate(),
   body('blogUrl')
-    .if((value: any, { req }: any) => req.body.type === 'critic')
-    .notEmpty(),
+    .if((_: any, { req }: any) => req.body.type === 'critic')
+    .isURL(),
   validationErrorHandler,
   signUp,
 );
@@ -52,7 +52,7 @@ router.patch(
     .optional()
     .isBefore(calcLatestDateOfBirthAllowed())
     .toDate(),
-  body('blogUrl').optional().notEmpty(),
+  body('blogUrl').optional().isURL(),
   validationErrorHandler,
   passport.authenticate('jwt', { session: false }),
   updateUser,
