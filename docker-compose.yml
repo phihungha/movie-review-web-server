@@ -1,6 +1,6 @@
 services:
-  express-api-server:
-    container_name: mrw-express-api-server
+  cinerate-web-api-server:
+    container_name: cinerate-web-api-server
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,10 +9,10 @@ services:
     environment:
       - SERVER_PORT=${SERVER_PORT:-3000}
     depends_on:
-      - postgres-db
+      - cinerate-web-db
 
-  postgres-db:
-    container_name: mrw-postgres-db
+  cinerate-web-db:
+    container_name: cinerate-web-db
     image: postgres:15
     ports:
       - 5432:5432
@@ -21,4 +21,4 @@ services:
 
 volumes:
   db-data:
-    name: ${VOLUME_NAME:-mrw-db-data}
+    name: ${VOLUME_NAME:-cinerate-web-db-data}

@@ -1,11 +1,15 @@
 services:
-  express-api-server:
+  cinerate-web-api-server:
     restart: always
+    environment:
+      - NODE_ENV=production
     env_file:
       - .env
+    volumes:
+      - ${HOME}/.aws:/root/.aws:ro
     command: npm start
 
-  postgres-db:
+  cinerate-web-db:
     restart: always
     env_file:
       - .env

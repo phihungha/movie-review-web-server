@@ -1,16 +1,19 @@
 services:
-  express-api-server:
+  cinerate-web-api-server:
     build:
       target: build
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@postgres-db:5432/${POSTGRES_DB:-app}?schema=public
-      - JWT_SECRET=${JWT_SECRET:-5snACD6WbVNXQGq8iZC6kVJFc}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@cinerate-web-db:5432/${POSTGRES_DB:-app}?schema=public
+      - JWT_SECRET=${JWT_SECRET:-By6nEuzserO3Zu2vsKbd}
+      - AWS_PROFILE=${AWS_PROFILE}
+      - S3_BUCKET=cinerate-movie-review
     volumes:
       - .:/app
+      - ${HOME}/.aws:/root/.aws:ro
       - /app/node_modules
     command: npm run dev
 
-  postgres-db:
+  cinerate-web-db:
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-app}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-app}
