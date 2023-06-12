@@ -38,7 +38,10 @@ router.patch(
   body('password').optional().isLength({ min: 8 }),
   body('name').optional().notEmpty(),
   body('gender').optional().toLowerCase().isIn(['male', 'female', 'other']),
-  body('dateOfBirth').optional().isBefore(calcDateOfBirthFromAge(14)).toDate(),
+  body('dateOfBirth')
+    .optional()
+    .isBefore(calcDateOfBirthFromAge(14).toDateString())
+    .toDate(),
   body('blogUrl').optional().isURL(),
   validationErrorHandler,
   passport.authenticate('jwt', { session: false }),

@@ -1,7 +1,7 @@
 import { Gender, UserType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
-export function calcDateOfBirthFromAge(age: number) {
+export function calcDateOfBirthFromAge(age: number): Date {
   const today = new Date();
   today.setFullYear(today.getFullYear() - age);
   return today;
