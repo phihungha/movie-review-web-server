@@ -1,10 +1,10 @@
 import { Gender, UserType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
-export function calcLatestDateOfBirthAllowed() {
-  const currentDate = new Date();
-  currentDate.setFullYear(currentDate.getFullYear() - 14);
-  return currentDate.toDateString();
+export function calcDateOfBirthFromAge(age: number) {
+  const today = new Date();
+  today.setFullYear(today.getFullYear() - age);
+  return today;
 }
 
 export function getGenderFromReqParam(gender?: string): Gender | undefined {

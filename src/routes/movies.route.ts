@@ -9,6 +9,7 @@ import validationErrorHandler from '../middlewares/validation-error-handler.midd
 import {
   deleteReview,
   getReview,
+  getReviewBreakdown,
   getReviewsOfMovie,
   postReviewOfMovie,
   thankReview,
@@ -44,6 +45,13 @@ router.get(
   query('asc').optional().toBoolean(),
   validationErrorHandler,
   getReviewsOfMovie,
+);
+
+router.get(
+  '/:id/reviewBreakdown',
+  param('id').toInt(),
+  validationErrorHandler,
+  getReviewBreakdown,
 );
 
 router.get(

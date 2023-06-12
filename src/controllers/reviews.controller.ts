@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { prismaClient } from '../api-clients';
-import { Review, User, UserType } from '@prisma/client';
+import { Gender, Review, User, UserType } from '@prisma/client';
 import { HttpNotFoundError } from '../http-errors';
 import { PrismaTxClient } from '../types';
 import { DbErrHandlerChain } from '../db-errors';
+import { calcDateOfBirthFromAge } from '../utils';
 
 export async function getReviewsOfMovie(
   req: Request,
@@ -80,6 +81,81 @@ export async function getReview(
   } else {
     res.json(result);
   }
+}
+
+async function calcAvgReviewScoreByRegularsGender(
+  movieId: number,
+  gender: Gender,
+): Promise<number | null> {
+  const result = await prismaClient.review.aggregate({
+    _avg: {
+      score: true,
+    },
+    where: {
+      movieId,
+      authorType: UserType.Regular,
+      author: {
+        gender,
+      },
+    },
+  });
+  return result._avg.score;
+}
+
+async function calcAvgReviewScoreByRegularsAge(
+  movieId: number,
+  minAge?: number,
+  maxAge?: number,
+): Promise<number | null> {
+  const result = await prismaClient.review.aggregate({
+    _avg: {
+      score: true,
+    },
+    where: {
+      movieId,
+      authorType: UserType.Regular,
+      author: {
+        dateOfBirth: {
+          lte: minAge ? calcDateOfBirthFromAge(minAge) : undefined,
+          gte: maxAge ? calcDateOfBirthFromAge(maxAge) : undefined,
+        },
+      },
+    },
+  });
+  return result._avg.score;
+}
+
+export async function getReviewBreakdown(req: Request, res: Response) {
+  const movieId = +req.params.id;
+
+  const result = await prismaClient.review.groupBy({
+    by: ['score'],
+    where: {
+      movieId,
+    },
+    _count: {
+      id: true,
+    },
+  });
+  const reviewCountsByScore = result.reduce(
+    (output, item) =>
+      Object.assign(output, output, { [item.score]: item._count.id }),
+    {},
+  );
+
+  res.json({
+    reviewCountByScore: reviewCountsByScore,
+    avgScoresByRegularsGender: {
+      male: await calcAvgReviewScoreByRegularsGender(movieId, Gender.Male),
+      female: await calcAvgReviewScoreByRegularsGender(movieId, Gender.Female),
+    },
+    avgScoresByRegularsAge: {
+      '14-20': await calcAvgReviewScoreByRegularsAge(movieId, 14, 20),
+      '21-30': await calcAvgReviewScoreByRegularsAge(movieId, 21, 30),
+      '31-49': await calcAvgReviewScoreByRegularsAge(movieId, 31, 49),
+      '50-Above': await calcAvgReviewScoreByRegularsAge(movieId, 50),
+    },
+  });
 }
 
 async function updateAggregateData(
