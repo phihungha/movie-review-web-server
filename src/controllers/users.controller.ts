@@ -4,13 +4,23 @@ import { getViewedMoviesByUserId } from '../data/users.data';
 import { getThankedReviewsByUserId } from '../data/users.data';
 import { HttpNotFoundError } from '../http-errors';
 import { UserType } from '@prisma/client';
-import { prismaClient } from '../api-clients';
+import { prismaClient, s3Client } from '../api-clients';
 import { DbErrHandlerChain } from '../db-errors';
 import {
   generateHashedPassword,
   getGenderFromReqParam,
   getUserTypeFromReqParam,
 } from '../utils';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+
+async function getAvatarUploadUrl(userId: number) {
+  const command = new PutObjectCommand({
+    Bucket: process.env.S3_BUCKET,
+    Key: `'public/userProfileImages/${userId}.webp`,
+  });
+  return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+}
 
 export async function signUp(req: Request, res: Response, next: NextFunction) {
   const username = req.body.username;
@@ -47,8 +57,11 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
       },
     });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { hashedPassword, ...sanitizedResult } = result;
-    res.json(sanitizedResult);
+    const { hashedPassword, avatarUrl, ...sanitizedResult } = result;
+    res.json({
+      ...sanitizedResult,
+      avatarUploadUrl: await getAvatarUploadUrl(result.id),
+    });
   } catch (err) {
     DbErrHandlerChain.new().unique().handle(err, next);
   }

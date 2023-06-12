@@ -40,6 +40,7 @@ export async function updatePersonalInfo(
 ) {
   const user = req.user as User;
   const username = req.body.username;
+  const avatarUrl = req.body.avatarUrl;
   const email = req.body.email;
   const name = req.body.name;
   const dateOfBirth = req.body.dateOfBirth;
@@ -68,6 +69,7 @@ export async function updatePersonalInfo(
       data: {
         username,
         email,
+        avatarUrl,
         hashedPassword: newHashedPassword,
         name,
         gender,
