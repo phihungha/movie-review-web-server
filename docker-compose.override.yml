@@ -7,6 +7,7 @@ services:
       - JWT_SECRET=${JWT_SECRET:-By6nEuzserO3Zu2vsKbd}
       - AWS_PROFILE=${AWS_PROFILE}
       - S3_BUCKET=cinerate-movie-review-service
+      - GOOGLE_APPLICATION_CREDENTIALS=./.creds/cinerate-firebase-adminsdk.json
     volumes:
       - .:/app
       - ${HOME}/.aws:/root/.aws:ro
