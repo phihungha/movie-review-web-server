@@ -1,5 +1,4 @@
 import { Gender, UserType } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
 
 export function calcDateOfBirthFromAge(age: number): Date {
   const today = new Date();
@@ -7,7 +6,7 @@ export function calcDateOfBirthFromAge(age: number): Date {
   return today;
 }
 
-export function getGenderFromReqParam(gender?: string): Gender | undefined {
+export function reqParamToGender(gender?: string): Gender | undefined {
   switch (gender as 'male' | 'female' | 'other' | undefined) {
     case 'male':
       return Gender.Male;
@@ -22,7 +21,7 @@ export function getGenderFromReqParam(gender?: string): Gender | undefined {
   }
 }
 
-export function getUserTypeFromReqParam(userType?: string): UserType {
+export function reqParamToUserType(userType?: string): UserType {
   switch (userType) {
     case 'regular':
       return UserType.Regular;
@@ -31,11 +30,4 @@ export function getUserTypeFromReqParam(userType?: string): UserType {
     default:
       throw new Error('Invalid user type param value');
   }
-}
-
-export async function generateHashedPassword(
-  password: string,
-): Promise<string> {
-  const salt = await bcrypt.genSalt();
-  return await bcrypt.hash(password, salt);
 }

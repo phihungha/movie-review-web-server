@@ -4,9 +4,10 @@ import { getFirebaseUid } from '../data/auth.data';
 import { prismaClient } from '../api-clients';
 
 /**
- * Require authentication on a route.
+ * Require authentication as new user
+ * (no required personal info setup yet) on a route.
  */
-export default async function requireAuth(
+export default async function requireNewUserAuth(
   req: Request,
   res: Response,
   next: NextFunction,
@@ -23,9 +24,9 @@ export default async function requireAuth(
   const user = await prismaClient.user.findUnique({
     where: { id: firebaseUid },
   });
-  if (!user) {
+  if (user) {
     throw new HttpForbiddenError(
-      'User has not setup the required personal info',
+      'User has already setup required personal info',
     );
   }
 

@@ -7,7 +7,7 @@ import {
 } from '../data/users.data';
 import { prismaClient } from '../api-clients';
 import { DbErrHandlerChain } from '../db-errors';
-import { generateHashedPassword, getGenderFromReqParam } from '../utils';
+import { reqParamToGender } from '../utils';
 
 export async function getPersonalViewedMovies(req: Request, res: Response) {
   const user = req.user as User;
@@ -39,12 +39,7 @@ export async function updatePersonalInfo(
   const name = req.body.name;
   const dateOfBirth = req.body.dateOfBirth;
   const blogUrl = req.body.blogUrl;
-  const gender = getGenderFromReqParam(req.body.gender);
-
-  let newHashedPassword;
-  if (req.body.password) {
-    newHashedPassword = await generateHashedPassword(req.body.password);
-  }
+  const gender = reqParamToGender(req.body.gender);
 
   let userTypeData;
   if (blogUrl) {
@@ -62,16 +57,13 @@ export async function updatePersonalInfo(
         username,
         email,
         avatarUrl,
-        hashedPassword: newHashedPassword,
         name,
         gender,
         dateOfBirth,
         ...userTypeData,
       },
     });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { hashedPassword, ...sanitizedResult } = result;
-    res.json(sanitizedResult);
+    res.json(result);
   } catch (err) {
     DbErrHandlerChain.new().notFound().unique().handle(err, next);
   }
