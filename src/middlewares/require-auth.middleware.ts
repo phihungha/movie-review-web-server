@@ -11,12 +11,20 @@ export default async function requireAuth(
   res: Response,
   next: NextFunction,
 ) {
-  if (!req.headers.authorization) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
     next(new HttpForbiddenError());
     return;
   }
 
-  const firebaseUid = await getFirebaseUid(req.headers.authorization);
+  const authHeaderParts = authHeader.split('Bearer ');
+  const idToken = authHeaderParts.at(1);
+  if (!idToken) {
+    next(new HttpForbiddenError());
+    return;
+  }
+
+  const firebaseUid = await getFirebaseUid(idToken);
   if (!firebaseUid) {
     next(new HttpForbiddenError());
     return;
@@ -29,7 +37,9 @@ export default async function requireAuth(
     next(
       new HttpForbiddenError('User has not setup the required personal info'),
     );
+    return;
   }
+  req.user = user;
 
   next();
 }

@@ -5,6 +5,7 @@ export async function getFirebaseUid(idToken: string): Promise<string | null> {
     const token = await getAuth().verifyIdToken(idToken);
     return token.uid;
   } catch (err) {
+    console.log(err);
     return null;
   }
 }
