@@ -18,7 +18,7 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
 
   const firebaseUid = req.firebaseUid;
   if (!firebaseUid) {
-    throw new Error('Firebase user ID not found.');
+    throw new Error('Firebase user ID not provided');
   }
 
   const authService = getAuth();
