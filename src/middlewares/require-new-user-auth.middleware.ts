@@ -13,20 +13,22 @@ export default async function requireNewUserAuth(
   next: NextFunction,
 ) {
   if (!req.headers.authorization) {
-    throw new HttpForbiddenError();
+    next(new HttpForbiddenError());
+    return;
   }
 
   const firebaseUid = await getFirebaseUid(req.headers.authorization);
   if (!firebaseUid) {
-    throw new HttpForbiddenError();
+    next(new HttpForbiddenError());
+    return;
   }
 
   const user = await prismaClient.user.findUnique({
     where: { id: firebaseUid },
   });
   if (user) {
-    throw new HttpForbiddenError(
-      'User has already setup required personal info',
+    next(
+      new HttpForbiddenError('User has already setup required personal info'),
     );
   }
 
