@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import {
-  getThankedReviewsOfCurrentUser,
-  getReviewsOfCurrentUser,
-  getViewedMoviesOfCurrentUser,
+  getPersonalThankedReviews,
+  getPersonalReviews,
+  getPersonalViewedMovies,
 } from '../controllers/personal.controller';
 import { param, body } from 'express-validator';
 import { updatePersonalInfo } from '../controllers/personal.controller';
@@ -12,11 +12,11 @@ import requireAuth from '../middlewares/require-auth.middleware';
 
 const router = Router();
 
-router.get('/viewed-movies', requireAuth, getViewedMoviesOfCurrentUser);
+router.get('/viewed-movies', requireAuth, getPersonalViewedMovies);
 
-router.get('/reviews', requireAuth, getReviewsOfCurrentUser);
+router.get('/reviews', requireAuth, getPersonalReviews);
 
-router.get('/thanked-reviews', requireAuth, getThankedReviewsOfCurrentUser);
+router.get('/thanked-reviews', requireAuth, getPersonalThankedReviews);
 
 router.patch(
   '/',

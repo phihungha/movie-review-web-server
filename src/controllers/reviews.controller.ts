@@ -1,10 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
 import { prismaClient } from '../api-clients';
-import { Gender, Review, User, UserType } from '@prisma/client';
+import { Gender, User } from '@prisma/client';
 import { HttpNotFoundError } from '../http-errors';
-import { PrismaTxClient } from '../types';
 import { DbErrHandlerChain } from '../db-errors';
-import { calcDateOfBirthFromAge } from '../utils';
+import {
+  calcAvgReviewScoreByRegularsAge,
+  calcAvgReviewScoreByRegularsGender,
+  updateAggregateData,
+} from '../data/reviews.data';
 
 export async function getReviewsOfMovie(
   req: Request,
@@ -83,59 +86,13 @@ export async function getReview(
   }
 }
 
-async function calcAvgReviewScoreByRegularsGender(
-  movieId: number,
-  gender: Gender,
-): Promise<number | null> {
-  const result = await prismaClient.review.aggregate({
-    _avg: {
-      score: true,
-    },
-    where: {
-      movieId,
-      authorType: UserType.Regular,
-      author: {
-        gender,
-      },
-    },
-  });
-  return result._avg.score;
-}
-
-async function calcAvgReviewScoreByRegularsAge(
-  movieId: number,
-  minAge?: number,
-  maxAge?: number,
-): Promise<number | null> {
-  const result = await prismaClient.review.aggregate({
-    _avg: {
-      score: true,
-    },
-    where: {
-      movieId,
-      authorType: UserType.Regular,
-      author: {
-        dateOfBirth: {
-          lte: minAge ? calcDateOfBirthFromAge(minAge) : undefined,
-          gte: maxAge ? calcDateOfBirthFromAge(maxAge) : undefined,
-        },
-      },
-    },
-  });
-  return result._avg.score;
-}
-
 export async function getReviewBreakdown(req: Request, res: Response) {
   const movieId = +req.params.id;
 
   const result = await prismaClient.review.groupBy({
     by: ['score'],
-    where: {
-      movieId,
-    },
-    _count: {
-      id: true,
-    },
+    where: { movieId },
+    _count: { id: true },
   });
   const reviewCountsByScore = result.reduce(
     (output, item) =>
@@ -155,47 +112,6 @@ export async function getReviewBreakdown(req: Request, res: Response) {
       '31-49': await calcAvgReviewScoreByRegularsAge(movieId, 31, 49),
       '50-Above': await calcAvgReviewScoreByRegularsAge(movieId, 50),
     },
-  });
-}
-
-async function updateAggregateData(
-  review: Review,
-  authorType: UserType,
-  prismaClient: PrismaTxClient,
-) {
-  const reviewAggregates = await prismaClient.review.aggregate({
-    _avg: {
-      score: true,
-    },
-    _count: {
-      id: true,
-    },
-    where: {
-      movieId: review.movieId,
-      authorType,
-    },
-  });
-  const averageScore = reviewAggregates._avg.score;
-  const reviewCount = reviewAggregates._count.id;
-
-  let updateData;
-  if (authorType === UserType.Regular) {
-    updateData = {
-      regularScore: averageScore,
-      regularReviewCount: reviewCount,
-    };
-  } else {
-    updateData = {
-      criticScore: averageScore,
-      criticReviewCount: reviewCount,
-    };
-  }
-
-  await prismaClient.movie.update({
-    where: {
-      id: review.movieId,
-    },
-    data: updateData,
   });
 }
 
@@ -242,13 +158,8 @@ export async function updateReview(
 
   try {
     const result = await prismaClient.review.update({
-      where: {
-        id: reviewId,
-      },
-      data: {
-        title,
-        content,
-      },
+      where: { id: reviewId },
+      data: { title, content },
     });
     res.json(result);
   } catch (err) {
@@ -266,9 +177,7 @@ export async function deleteReview(
   const deletedReview = await prismaClient.$transaction(async (client) => {
     try {
       const review = await client.review.delete({
-        where: {
-          id: reviewId,
-        },
+        where: { id: reviewId },
       });
       await updateAggregateData(review, review.authorType, client);
       res.json(review);
@@ -289,14 +198,10 @@ export async function thankReview(
 
   const result = await prismaClient.$transaction(async (client) => {
     const review = await client.review.findUnique({
-      where: {
-        id: reviewId,
-      },
+      where: { id: reviewId },
       include: {
         thankUsers: {
-          where: {
-            id: user.id,
-          },
+          where: { id: user.id },
         },
       },
     });
@@ -307,9 +212,7 @@ export async function thankReview(
 
     if (review.thankUsers.length === 0) {
       return await client.review.update({
-        where: {
-          id: reviewId,
-        },
+        where: { id: reviewId },
         data: {
           thankUsers: { connect: { id: user.id } },
           thankCount: { increment: 1 },
@@ -317,9 +220,7 @@ export async function thankReview(
       });
     }
     return await client.review.update({
-      where: {
-        id: reviewId,
-      },
+      where: { id: reviewId },
       data: {
         thankUsers: { disconnect: { id: user.id } },
         thankCount: { decrement: 1 },

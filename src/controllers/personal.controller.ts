@@ -1,35 +1,29 @@
 import { NextFunction, Request, Response } from 'express';
 import { User } from '@prisma/client';
 import {
-  getReviewsByUserId,
-  getThankedReviewsByUserId,
-  getViewedMoviesByUserId,
+  getUserReviews,
+  getUserThankedReviews,
+  getUserViewedMovies,
 } from '../data/users.data';
 import { prismaClient } from '../api-clients';
 import { DbErrHandlerChain } from '../db-errors';
 import { generateHashedPassword, getGenderFromReqParam } from '../utils';
 
-export async function getViewedMoviesOfCurrentUser(
-  req: Request,
-  res: Response,
-) {
+export async function getPersonalViewedMovies(req: Request, res: Response) {
   const user = req.user as User;
-  const result = await getViewedMoviesByUserId(user.id);
+  const result = await getUserViewedMovies(user.id);
   res.json(result);
 }
 
-export async function getReviewsOfCurrentUser(req: Request, res: Response) {
+export async function getPersonalReviews(req: Request, res: Response) {
   const user = req.user as User;
-  const result = await getReviewsByUserId(user.id);
+  const result = await getUserReviews(user.id);
   res.json(result);
 }
 
-export async function getThankedReviewsOfCurrentUser(
-  req: Request,
-  res: Response,
-) {
+export async function getPersonalThankedReviews(req: Request, res: Response) {
   const user = req.user as User;
-  const result = await getThankedReviewsByUserId(user.id);
+  const result = await getUserThankedReviews(user.id);
   res.json(result);
 }
 
@@ -63,9 +57,7 @@ export async function updatePersonalInfo(
 
   try {
     const result = await prismaClient.user.update({
-      where: {
-        id: user.id,
-      },
+      where: { id: user.id },
       data: {
         username,
         email,

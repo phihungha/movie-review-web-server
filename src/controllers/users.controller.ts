@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import { getReviewsByUserId } from '../data/users.data';
-import { getViewedMoviesByUserId } from '../data/users.data';
-import { getThankedReviewsByUserId } from '../data/users.data';
+import { getUserReviews } from '../data/users.data';
+import { getUserViewedMovies } from '../data/users.data';
+import { getUserThankedReviews } from '../data/users.data';
 import { HttpNotFoundError } from '../http-errors';
 import { UserType } from '@prisma/client';
 import { prismaClient, s3Client } from '../api-clients';
@@ -70,9 +70,7 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
 export async function getUser(req: Request, res: Response, next: NextFunction) {
   const userId = +req.params.id;
   const result = await prismaClient.user.findUnique({
-    where: {
-      id: userId,
-    },
+    where: { id: userId },
   });
   if (!result) {
     return next(new HttpNotFoundError('User not found'));
@@ -89,7 +87,7 @@ export async function getViewedMoviesOfUser(
   next: NextFunction,
 ) {
   const userId = +req.params.id;
-  const result = await getViewedMoviesByUserId(userId);
+  const result = await getUserViewedMovies(userId);
   if (!result) {
     next(new HttpNotFoundError('User not found'));
   } else {
@@ -103,7 +101,7 @@ export async function getReviewsOfUser(
   next: NextFunction,
 ) {
   const userId = +req.params.id;
-  const result = await getReviewsByUserId(userId);
+  const result = await getUserReviews(userId);
   if (!result) {
     next(new HttpNotFoundError('User not found'));
   } else {
@@ -117,7 +115,7 @@ export async function getThankedReviewsOfUser(
   next: NextFunction,
 ) {
   const userId = +req.params.id;
-  const result = await getThankedReviewsByUserId(userId);
+  const result = await getUserThankedReviews(userId);
   if (!result) {
     next(new HttpNotFoundError('User not found'));
   } else {

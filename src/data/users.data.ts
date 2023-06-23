@@ -1,37 +1,25 @@
 import { prismaClient } from '../api-clients';
 
-export async function getViewedMoviesByUserId(userId: number) {
+export async function getUserViewedMovies(userId: number) {
   const result = await prismaClient.user.findUnique({
-    where: {
-      id: userId,
-    },
-    include: {
-      viewedMovies: true,
-    },
+    where: { id: userId },
+    include: { viewedMovies: true },
   });
   return result?.viewedMovies;
 }
 
-export async function getReviewsByUserId(userId: number) {
+export async function getUserReviews(userId: number) {
   const result = await prismaClient.user.findUnique({
-    where: {
-      id: userId,
-    },
-    include: {
-      reviews: true,
-    },
+    where: { id: userId },
+    include: { reviews: true },
   });
   return result?.reviews;
 }
 
-export async function getThankedReviewsByUserId(userId: number) {
+export async function getUserThankedReviews(userId: number) {
   const result = await prismaClient.user.findUnique({
-    where: {
-      id: userId,
-    },
-    include: {
-      reviewThanks: true,
-    },
+    where: { id: userId },
+    include: { reviewThanks: true },
   });
   return result?.reviewThanks;
 }
