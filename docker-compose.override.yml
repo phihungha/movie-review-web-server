@@ -8,11 +8,13 @@ services:
       - AWS_PROFILE=${AWS_PROFILE}
       - S3_BUCKET=cinerate-movie-review-service
       - GOOGLE_APPLICATION_CREDENTIALS=./.creds/cinerate-firebase-adminsdk.json
+    ports:
+      - 9229:9229
     volumes:
       - .:/app
       - ${HOME}/.aws:/root/.aws:ro
       - /app/node_modules
-    command: npm run dev
+    command: npm run debug
 
   cinerate-web-db:
     environment:
