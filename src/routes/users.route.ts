@@ -8,6 +8,7 @@ import {
   signUp,
 } from '../controllers/users.controller';
 import validationErrorHandler from '../middlewares/validation-error-handler.middleware';
+import requireNewUserAuth from '../middlewares/require-new-user-auth.middleware';
 
 function calcLatestDateOfBirthAllowed() {
   const currentDate = new Date();
@@ -33,6 +34,7 @@ router.post(
     )
     .isURL(),
   validationErrorHandler,
+  requireNewUserAuth,
   signUp,
 );
 
