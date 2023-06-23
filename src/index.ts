@@ -6,14 +6,10 @@ import MoviesRouter from './routes/movies.route';
 import ReviewsRouter from './routes/reviews.route';
 import UsersRouter from './routes/users.route';
 import PersonalRouter from './routes/personal.route';
-import passport from 'passport';
-import jwtStrategy from './passport-strategies/jwt.strategy';
 import errorHandler from './middlewares/error-handler.middleware';
 
 dotenv.config();
 const serverPort = process.env.SERVER_PORT;
-
-passport.use(jwtStrategy);
 
 const app = express();
 app.use(bodyParser.json());
