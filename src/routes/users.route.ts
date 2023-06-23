@@ -20,10 +20,7 @@ const router = Router();
 router.post(
   '/',
   body('username').notEmpty(),
-  body('email').isEmail(),
   body('type').toLowerCase().isIn(['regular', 'critic']),
-  body('password').isLength({ min: 8 }),
-  body('name').notEmpty(),
   body('gender').optional().toLowerCase().isIn(['male', 'female', 'other']),
   body('dateOfBirth')
     .optional()

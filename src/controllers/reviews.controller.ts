@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { prismaClient } from '../api-clients';
-import { Gender, User } from '@prisma/client';
+import { Gender } from '@prisma/client';
 import { HttpNotFoundError } from '../http-errors';
 import { DbErrHandlerChain } from '../db-errors';
 import {
@@ -121,10 +121,14 @@ export async function postReviewOfMovie(
   next: NextFunction,
 ) {
   const movieId = +req.params.id;
-  const author = req.user as User;
   const title = req.body.title;
   const content = req.body.content;
   const score = req.body.score as number;
+
+  const author = req.user;
+  if (!author) {
+    throw new Error('User does not exist in request');
+  }
 
   const newReview = await prismaClient.$transaction(async (client) => {
     try {
@@ -194,7 +198,11 @@ export async function thankReview(
   next: NextFunction,
 ) {
   const reviewId = +req.params.id;
-  const user = req.user as User;
+  const user = req.user;
+
+  if (!user) {
+    throw new Error('User does not exist in request');
+  }
 
   const result = await prismaClient.$transaction(async (client) => {
     const review = await client.review.findUnique({

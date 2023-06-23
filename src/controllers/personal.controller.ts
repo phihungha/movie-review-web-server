@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import { User } from '@prisma/client';
 import {
   getUserReviews,
   getUserThankedReviews,
@@ -10,19 +9,28 @@ import { DbErrHandlerChain } from '../db-errors';
 import { reqParamToGender } from '../utils';
 
 export async function getPersonalViewedMovies(req: Request, res: Response) {
-  const user = req.user as User;
+  const user = req.user;
+  if (!user) {
+    throw new Error('User does not exist in request');
+  }
   const result = await getUserViewedMovies(user.id);
   res.json(result);
 }
 
 export async function getPersonalReviews(req: Request, res: Response) {
-  const user = req.user as User;
+  const user = req.user;
+  if (!user) {
+    throw new Error('User does not exist in request');
+  }
   const result = await getUserReviews(user.id);
   res.json(result);
 }
 
 export async function getPersonalThankedReviews(req: Request, res: Response) {
-  const user = req.user as User;
+  const user = req.user;
+  if (!user) {
+    throw new Error('User does not exist in request');
+  }
   const result = await getUserThankedReviews(user.id);
   res.json(result);
 }
@@ -32,7 +40,11 @@ export async function updatePersonalInfo(
   res: Response,
   next: NextFunction,
 ) {
-  const user = req.user as User;
+  const user = req.user;
+  if (!user) {
+    throw new Error('User does not exist in request');
+  }
+
   const username = req.body.username;
   const avatarUrl = req.body.avatarUrl;
   const email = req.body.email;

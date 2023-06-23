@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { prismaClient } from '../api-clients';
 import { HttpNotFoundError } from '../http-errors';
-import { User } from '@prisma/client';
 
 export async function getMovies(req: Request, res: Response) {
   const searchTerm = req.query.searchTerm as string | undefined;
@@ -49,7 +48,11 @@ export async function markMovieAsViewed(
   next: NextFunction,
 ) {
   const movieId = +req.params.id;
-  const user = req.user as User;
+  const user = req.user;
+
+  if (!user) {
+    throw new Error('User does not exist in request');
+  }
 
   const result = await prismaClient.$transaction(async (client) => {
     const movie = await client.movie.findUnique({

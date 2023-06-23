@@ -22,9 +22,6 @@ router.patch(
   '/',
   param('id').toInt(),
   body('username').optional().notEmpty(),
-  body('email').optional().isEmail(),
-  body('password').optional().isLength({ min: 8 }),
-  body('name').optional().notEmpty(),
   body('gender').optional().toLowerCase().isIn(['male', 'female', 'other']),
   body('dateOfBirth')
     .optional()
