@@ -6,6 +6,7 @@ import {
   getUser,
   getViewedMoviesOfUser,
   signUp,
+  getUsers,
 } from '../controllers/users.controller';
 import validationErrorHandler from '../middlewares/validation-error-handler.middleware';
 import requireNewUserAuth from '../middlewares/require-new-user-auth.middleware';
@@ -17,6 +18,8 @@ function calcLatestDateOfBirthAllowed() {
 }
 
 const router = Router();
+
+router.get('/', getUsers);
 
 router.post(
   '/',
@@ -38,25 +41,25 @@ router.post(
   signUp,
 );
 
-router.get('/:id', param('id').toInt(), validationErrorHandler, getUser);
+router.get('/:id', param('id'), validationErrorHandler, getUser);
 
 router.get(
   '/:id/viewed-movies',
-  param('id').toInt(),
+  param('id'),
   validationErrorHandler,
   getViewedMoviesOfUser,
 );
 
 router.get(
   '/:id/reviews',
-  param('id').toInt(),
+  param('id'),
   validationErrorHandler,
   getReviewsOfUser,
 );
 
 router.get(
   '/:id/thanked-reviews',
-  param('id').toInt(),
+  param('id'),
   validationErrorHandler,
   getThankedReviewsOfUser,
 );

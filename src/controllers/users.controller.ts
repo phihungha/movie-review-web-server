@@ -9,6 +9,19 @@ import { DbErrHandlerChain } from '../db-errors';
 import { reqParamToGender, reqParamToUserType } from '../utils';
 import { getAuth } from 'firebase-admin/auth';
 
+export async function getUsers(req: Request, res: Response) {
+  const searchTerm = req.query.searchTerm as string | undefined;
+  const result = await prismaClient.user.findMany({
+    where: {
+      OR: [
+        { name: { contains: searchTerm ?? '', mode: 'insensitive' } },
+        { username: { contains: searchTerm ?? '', mode: 'insensitive' } },
+      ],
+    },
+  });
+  res.json(result);
+}
+
 export async function signUp(req: Request, res: Response, next: NextFunction) {
   const username = req.body.username;
   const dateOfBirth = req.body.dateOfBirth;
