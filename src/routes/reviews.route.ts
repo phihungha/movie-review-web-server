@@ -7,7 +7,7 @@ import {
   thankReview,
 } from '../controllers/reviews.controller';
 import { param } from 'express-validator';
-import passport from 'passport';
+import requireAuth from '../middlewares/require-auth.middleware';
 
 const router = Router();
 
@@ -17,7 +17,7 @@ router.patch(
   '/:id',
   param('id').toInt(),
   validationErrorHandler,
-  passport.authenticate('jwt', { session: false }),
+  requireAuth,
   updateReview,
 );
 
@@ -25,7 +25,7 @@ router.delete(
   '/:id',
   param('id').toInt(),
   validationErrorHandler,
-  passport.authenticate('jwt', { session: false }),
+  requireAuth,
   deleteReview,
 );
 
@@ -33,7 +33,7 @@ router.put(
   '/:id/thanks',
   param('id').toInt(),
   validationErrorHandler,
-  passport.authenticate('jwt', { session: false }),
+  requireAuth,
   thankReview,
 );
 

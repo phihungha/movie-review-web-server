@@ -1,6 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
+/**
+ * Process express-validator validation exceptions and
+ * respond with a proper status code and error message.
+ */
 export default function validationErrorHandler(
   req: Request,
   res: Response,

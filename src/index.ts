@@ -1,7 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
-import AuthRouter from './routes/auth.route';
 import MoviesRouter from './routes/movies.route';
 import ReviewsRouter from './routes/reviews.route';
 import UsersRouter from './routes/users.route';
@@ -14,7 +13,6 @@ const serverPort = process.env.SERVER_PORT;
 const app = express();
 app.use(bodyParser.json());
 
-app.use('/auth', AuthRouter);
 app.use('/movies', MoviesRouter);
 app.use('/reviews', ReviewsRouter);
 app.use('/users', UsersRouter);

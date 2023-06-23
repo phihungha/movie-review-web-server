@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import passport from 'passport';
 import {
   getThankedReviewsOfCurrentUser,
   getReviewsOfCurrentUser,
@@ -9,26 +8,15 @@ import { param, body } from 'express-validator';
 import { updatePersonalInfo } from '../controllers/personal.controller';
 import validationErrorHandler from '../middlewares/validation-error-handler.middleware';
 import { calcDateOfBirthFromAge } from '../utils';
+import requireAuth from '../middlewares/require-auth.middleware';
 
 const router = Router();
 
-router.get(
-  '/viewed-movies',
-  passport.authenticate('jwt', { session: false }),
-  getViewedMoviesOfCurrentUser,
-);
+router.get('/viewed-movies', requireAuth, getViewedMoviesOfCurrentUser);
 
-router.get(
-  '/reviews',
-  passport.authenticate('jwt', { session: false }),
-  getReviewsOfCurrentUser,
-);
+router.get('/reviews', requireAuth, getReviewsOfCurrentUser);
 
-router.get(
-  '/thanked-reviews',
-  passport.authenticate('jwt', { session: false }),
-  getThankedReviewsOfCurrentUser,
-);
+router.get('/thanked-reviews', requireAuth, getThankedReviewsOfCurrentUser);
 
 router.patch(
   '/',
@@ -44,7 +32,7 @@ router.patch(
     .toDate(),
   body('blogUrl').optional().isURL(),
   validationErrorHandler,
-  passport.authenticate('jwt', { session: false }),
+  requireAuth,
   updatePersonalInfo,
 );
 
