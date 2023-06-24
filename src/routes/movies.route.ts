@@ -75,6 +75,9 @@ router.post(
 router.patch(
   '/:movieId/reviews/:id',
   param('id').toInt(),
+  body('title').notEmpty(),
+  body('content').notEmpty(),
+  body('score').isInt({ min: 0, max: 10 }).toInt(),
   validationErrorHandler,
   requireAuth,
   updateReview,
