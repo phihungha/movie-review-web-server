@@ -1,11 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { prismaClient } from '../api-clients';
 import { Gender } from '@prisma/client';
-import {
-  HttpBadRequest,
-  HttpForbiddenError,
-  HttpNotFoundError,
-} from '../http-errors';
+import { HttpBadRequest, HttpNotFoundError } from '../http-errors';
 import { DbErrHandlerChain } from '../db-errors';
 import {
   calcAvgReviewScoreByRegularsAge,
