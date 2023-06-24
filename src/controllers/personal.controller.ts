@@ -82,7 +82,10 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
         ...userTypeData,
       },
     });
-    await authService.setCustomUserClaims(firebaseUid, { fullAccess: true });
+    await authService.setCustomUserClaims(firebaseUid, {
+      fullAccess: true,
+      role: userType,
+    });
     const avatarUploadUrl = await getAvatarUploadUrl(result.id);
     res.json({ result, avatarUploadUrl });
   } catch (err) {
