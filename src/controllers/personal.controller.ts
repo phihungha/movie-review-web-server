@@ -4,13 +4,22 @@ import {
   getUserReviews,
   getUserThankedReviews,
   getUserViewedMovies,
+  getUserDetails,
 } from '../data/users.data';
 import { prismaClient } from '../api-clients';
 import { DbErrHandlerChain } from '../db-errors';
 import { reqParamToGender, reqParamToUserType } from '../utils';
 import { getAuth } from 'firebase-admin/auth';
-import { HttpBadRequest } from '../http-errors';
 import { UserType } from '@prisma/client';
+
+export async function getPersonalDetails(req: Request, res: Response) {
+  const user = req.user;
+  if (!user) {
+    throw new Error('User does not exist in request');
+  }
+  const result = await getUserDetails(user.id);
+  res.json(result);
+}
 
 export async function getPersonalViewedMovies(req: Request, res: Response) {
   const user = req.user;
@@ -55,7 +64,7 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
   const firebaseUid = decodedIdToken.uid;
   const firebaseUser = await authService.getUser(decodedIdToken.uid);
   if (!firebaseUser.email || !firebaseUser.displayName) {
-    throw new HttpBadRequest('Firebase user lacks email or/and display name');
+    throw new Error('Firebase user lacks email or/and display name');
   }
 
   let userTypeData;
@@ -113,7 +122,7 @@ export async function updatePersonalInfo(
   const firebaseUid = decodedIdToken.uid;
   const firebaseUser = await authService.getUser(decodedIdToken.uid);
   if (!firebaseUser.email || !firebaseUser.displayName) {
-    throw new HttpBadRequest('Firebase user lacks email or/and display name');
+    throw new Error('Firebase user lacks email or/and display name');
   }
 
   let userTypeData;

@@ -2,6 +2,17 @@ import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { prismaClient, s3Client } from '../api-clients';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
+export async function getUserDetails(userId: string) {
+  return await prismaClient.user.findUnique({
+    where: { id: userId },
+    include: {
+      viewedMovies: { take: 5 },
+      reviews: { take: 5 },
+      reviewThanks: { take: 5 },
+    },
+  });
+}
+
 export async function getUserViewedMovies(userId: string) {
   const result = await prismaClient.user.findUnique({
     where: { id: userId },

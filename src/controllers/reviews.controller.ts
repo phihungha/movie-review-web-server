@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { prismaClient } from '../api-clients';
 import { Gender } from '@prisma/client';
-import { HttpNotFoundError } from '../http-errors';
+import { HttpBadRequest, HttpNotFoundError } from '../http-errors';
 import { DbErrHandlerChain } from '../db-errors';
 import {
   calcAvgReviewScoreByRegularsAge,
@@ -130,6 +130,18 @@ export async function postReviewOfMovie(
     throw new Error('User does not exist in request');
   }
 
+  const existingReviews = await prismaClient.review.findMany({
+    where: { authorId: author.id, movieId: movieId },
+  });
+  if (existingReviews.length !== 0) {
+    next(
+      new HttpBadRequest(
+        "You've already made a review for this movie. Please edit it instead of making a new one",
+      ),
+    );
+    return;
+  }
+
   const newReview = await prismaClient.$transaction(async (client) => {
     try {
       const review = await client.review.create({
@@ -142,7 +154,7 @@ export async function postReviewOfMovie(
           score,
         },
       });
-      await updateAggregateData(review, review.authorType, client);
+      await updateAggregateData(client, review);
       res.json(review);
     } catch (err) {
       DbErrHandlerChain.new().notFound().handle(err, next);
@@ -159,12 +171,14 @@ export async function updateReview(
   const reviewId = +req.params.id;
   const title = req.body.title;
   const content = req.body.content;
+  const score = req.body.score;
 
   try {
     const result = await prismaClient.review.update({
       where: { id: reviewId },
-      data: { title, content },
+      data: { title, content, score },
     });
+    await updateAggregateData(prismaClient, result);
     res.json(result);
   } catch (err) {
     DbErrHandlerChain.new().notFound().handle(err, next);
@@ -183,7 +197,7 @@ export async function deleteReview(
       const review = await client.review.delete({
         where: { id: reviewId },
       });
-      await updateAggregateData(review, review.authorType, client);
+      await updateAggregateData(client, review);
       res.json(review);
     } catch (err) {
       DbErrHandlerChain.new().notFound().handle(err, next);
