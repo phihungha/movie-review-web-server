@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpForbiddenError } from '../http-errors';
-import { getFirebaseUid } from '../data/auth.data';
+import { getDecodedIdToken } from '../data/auth.data';
 import { prismaClient } from '../api-clients';
 
 /**
@@ -24,14 +24,14 @@ export default async function requireAuth(
     return;
   }
 
-  const firebaseUid = await getFirebaseUid(idToken);
-  if (!firebaseUid) {
+  const decodedIdToken = await getDecodedIdToken(idToken);
+  if (!decodedIdToken) {
     next(new HttpForbiddenError());
     return;
   }
 
   const user = await prismaClient.user.findUnique({
-    where: { id: firebaseUid },
+    where: { id: decodedIdToken.uid },
   });
   if (!user) {
     next(
@@ -39,7 +39,8 @@ export default async function requireAuth(
     );
     return;
   }
-  req.user = user;
 
+  req.user = user;
+  req.decodedIdToken = decodedIdToken;
   next();
 }

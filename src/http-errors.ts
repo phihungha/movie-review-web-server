@@ -8,21 +8,21 @@ export class HttpError extends Error {
 }
 
 export class HttpNotFoundError extends HttpError {
-  name = 'HttpNotFoundError';
+  name = 'NotFoundError';
   constructor(message = 'Not found') {
     super(404, message);
   }
 }
 
 export class HttpForbiddenError extends HttpError {
-  name = 'HttpForbiddenError';
+  name = 'ForbiddenError';
   constructor(message = 'Unauthorized') {
     super(403, message);
   }
 }
 
 export class HttpBadRequest extends HttpError {
-  name = 'HttpBadRequest';
+  name = 'BadRequest';
   constructor(message = 'Bad request') {
     super(400, message);
   }

@@ -1,14 +1,16 @@
-import { Router } from 'express';
+import { Router, Request } from 'express';
 import {
   getPersonalThankedReviews,
   getPersonalReviews,
   getPersonalViewedMovies,
+  signUp,
 } from '../controllers/personal.controller';
 import { param, body } from 'express-validator';
 import { updatePersonalInfo } from '../controllers/personal.controller';
 import validationErrorHandler from '../middlewares/validation-error-handler.middleware';
 import { calcDateOfBirthFromAge } from '../utils';
 import requireAuth from '../middlewares/require-auth.middleware';
+import requireNewUserAuth from '../middlewares/require-new-user-auth.middleware';
 
 const router = Router();
 
@@ -17,6 +19,26 @@ router.get('/viewed-movies', requireAuth, getPersonalViewedMovies);
 router.get('/reviews', requireAuth, getPersonalReviews);
 
 router.get('/thanked-reviews', requireAuth, getPersonalThankedReviews);
+
+router.post(
+  '/',
+  body('username').notEmpty(),
+  body('type').toLowerCase().isIn(['regular', 'critic']),
+  body('gender').optional().toLowerCase().isIn(['male', 'female', 'other']),
+  body('dateOfBirth')
+    .optional()
+    .isBefore(calcDateOfBirthFromAge(14).toDateString())
+    .toDate(),
+  body('blogUrl')
+    .if(
+      (_: unknown, { req }: { req: unknown }) =>
+        (req as Request).body.type === 'critic',
+    )
+    .isURL(),
+  validationErrorHandler,
+  requireNewUserAuth,
+  signUp,
+);
 
 router.patch(
   '/',
@@ -34,3 +56,6 @@ router.patch(
 );
 
 export default router;
+function calcLatestDateOfBirthAllowed(): string | undefined {
+  throw new Error('Function not implemented.');
+}

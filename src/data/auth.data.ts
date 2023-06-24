@@ -1,9 +1,10 @@
-import { getAuth } from 'firebase-admin/auth';
+import { DecodedIdToken, getAuth } from 'firebase-admin/auth';
 
-export async function getFirebaseUid(idToken: string): Promise<string | null> {
+export async function getDecodedIdToken(
+  idToken: string,
+): Promise<DecodedIdToken | null> {
   try {
-    const token = await getAuth().verifyIdToken(idToken);
-    return token.uid;
+    return await getAuth().verifyIdToken(idToken);
   } catch (err) {
     console.log(err);
     return null;
