@@ -1,7 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpForbiddenError } from '../http-errors';
-import { getDecodedIdToken } from '../data/auth.data';
-import { prismaClient } from '../api-clients';
 
 /**
  * Require authentication as new user
@@ -12,36 +10,17 @@ export default async function requireNewUserAuth(
   res: Response,
   next: NextFunction,
 ) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    next(new HttpForbiddenError());
-    return;
-  }
-
-  const authHeaderParts = authHeader.split('Bearer ');
-  const idToken = authHeaderParts.at(1);
-  if (!idToken) {
-    next(new HttpForbiddenError());
-    return;
-  }
-
-  const decodedIdToken = await getDecodedIdToken(idToken);
-  if (!decodedIdToken) {
-    next(new HttpForbiddenError());
-    return;
-  }
-
-  const user = await prismaClient.user.findUnique({
-    where: { id: decodedIdToken.uid },
-  });
-  if (user) {
-    next(
+  if (!req.user) {
+    return next(
       new HttpForbiddenError(
-        'User has already setup the required personal info',
+        'User has already set up the required personal info',
       ),
     );
   }
 
-  req.decodedIdToken = decodedIdToken;
+  if (!req.decodedIdToken) {
+    return next(new HttpForbiddenError());
+  }
+
   next();
 }

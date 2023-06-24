@@ -29,17 +29,20 @@ export async function getMovieDetails(req: Request, res: Response) {
       productionCompanies: true,
       distributionCompanies: true,
       reviews: {
-        include: {
-          author: true,
-        },
-        take: 3,
-        orderBy: {
-          thankCount: 'desc',
-        },
+        include: { author: true },
+        take: 5,
+        orderBy: { thankCount: 'desc' },
       },
+      viewedUsers: req.user ? { where: { id: req.user.id } } : undefined,
     },
   });
-  res.json(result);
+
+  let isViewed = undefined;
+  if (req.user) {
+    isViewed = result?.viewedUsers.length === 1;
+  }
+
+  res.json({ ...result, viewedUsers: undefined, isViewed });
 }
 
 export async function markMovieAsViewed(
@@ -54,36 +57,31 @@ export async function markMovieAsViewed(
     throw new Error('User does not exist in request');
   }
 
-  const result = await prismaClient.$transaction(async (client) => {
-    const movie = await client.movie.findUnique({
+  const movie = await prismaClient.movie.findUnique({
+    where: {
+      id: movieId,
+    },
+    include: { viewedUsers: { where: { id: user.id } } },
+  });
+  if (!movie) {
+    return next(new HttpNotFoundError('Movie not found'));
+  }
+
+  let result;
+  let isViewed;
+  if (movie.viewedUsers.length === 0) {
+    result = await prismaClient.movie.update({
       where: {
         id: movieId,
       },
-      include: {
-        viewedUsers: {
-          where: {
-            id: user.id,
-          },
-        },
+      data: {
+        viewedUsers: { connect: { id: user.id } },
+        viewedUserCount: { increment: 1 },
       },
     });
-
-    if (!movie) {
-      return next(new HttpNotFoundError('Movie not found'));
-    }
-
-    if (movie.viewedUsers.length === 0) {
-      return await client.movie.update({
-        where: {
-          id: movieId,
-        },
-        data: {
-          viewedUsers: { connect: { id: user.id } },
-          viewedUserCount: { increment: 1 },
-        },
-      });
-    }
-    return await client.movie.update({
+    isViewed = true;
+  } else {
+    result = await prismaClient.movie.update({
       where: {
         id: movieId,
       },
@@ -92,6 +90,8 @@ export async function markMovieAsViewed(
         viewedUserCount: { decrement: 1 },
       },
     });
-  });
-  res.json(result);
+    isViewed = false;
+  }
+
+  res.json({ ...result, isViewed });
 }
