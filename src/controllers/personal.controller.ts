@@ -1,14 +1,16 @@
 import { NextFunction, Request, Response } from 'express';
 import {
+  getAvatarUploadUrl,
   getUserReviews,
   getUserThankedReviews,
   getUserViewedMovies,
 } from '../data/users.data';
 import { prismaClient } from '../api-clients';
 import { DbErrHandlerChain } from '../db-errors';
-import { reqParamToGender } from '../utils';
+import { reqParamToGender, reqParamToUserType } from '../utils';
 import { getAuth } from 'firebase-admin/auth';
 import { HttpBadRequest } from '../http-errors';
+import { UserType } from '@prisma/client';
 
 export async function getPersonalViewedMovies(req: Request, res: Response) {
   const user = req.user;
@@ -37,6 +39,57 @@ export async function getPersonalThankedReviews(req: Request, res: Response) {
   res.json(result);
 }
 
+export async function signUp(req: Request, res: Response, next: NextFunction) {
+  const username = req.body.username;
+  const dateOfBirth = req.body.dateOfBirth;
+  const blogUrl = req.body.blogUrl;
+  const gender = reqParamToGender(req.body.gender);
+  const userType = reqParamToUserType(req.body.type);
+
+  const decodedIdToken = req.decodedIdToken;
+  if (!decodedIdToken) {
+    throw new Error('Firebase ID token not provided');
+  }
+
+  const authService = getAuth();
+  const firebaseUid = decodedIdToken.uid;
+  const firebaseUser = await authService.getUser(decodedIdToken.uid);
+  if (!firebaseUser.email || !firebaseUser.displayName) {
+    throw new HttpBadRequest('Firebase user lacks email or/and display name');
+  }
+
+  let userTypeData;
+  if (userType === UserType.Critic) {
+    userTypeData = {
+      criticUser: { create: { blogUrl } },
+    };
+  } else {
+    userTypeData = {
+      regularUser: { create: {} },
+    };
+  }
+
+  try {
+    const result = await prismaClient.user.create({
+      data: {
+        id: firebaseUid,
+        username,
+        email: firebaseUser.email,
+        name: firebaseUser.displayName,
+        gender,
+        dateOfBirth,
+        userType,
+        ...userTypeData,
+      },
+    });
+    await authService.setCustomUserClaims(firebaseUid, { fullAccess: true });
+    const avatarUploadUrl = await getAvatarUploadUrl(result.id);
+    res.json({ result, avatarUploadUrl });
+  } catch (err) {
+    DbErrHandlerChain.new().unique().handle(err, next);
+  }
+}
+
 export async function updatePersonalInfo(
   req: Request,
   res: Response,
@@ -48,13 +101,14 @@ export async function updatePersonalInfo(
   const blogUrl = req.body.blogUrl;
   const gender = reqParamToGender(req.body.gender);
 
-  const firebaseUid = req.firebaseUid;
-  if (!firebaseUid) {
+  const decodedIdToken = req.decodedIdToken;
+  if (!decodedIdToken) {
     throw new Error('Firebase user ID not provided');
   }
 
   const authService = getAuth();
-  const firebaseUser = await authService.getUser(firebaseUid);
+  const firebaseUid = decodedIdToken.uid;
+  const firebaseUser = await authService.getUser(decodedIdToken.uid);
   if (!firebaseUser.email || !firebaseUser.displayName) {
     throw new HttpBadRequest('Firebase user lacks email or/and display name');
   }

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpForbiddenError } from '../http-errors';
-import { getFirebaseUid } from '../data/auth.data';
+import { getDecodedIdToken } from '../data/auth.data';
 import { prismaClient } from '../api-clients';
 
 /**
@@ -12,25 +12,36 @@ export default async function requireNewUserAuth(
   res: Response,
   next: NextFunction,
 ) {
-  if (!req.headers.authorization) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
     next(new HttpForbiddenError());
     return;
   }
 
-  const firebaseUid = await getFirebaseUid(req.headers.authorization);
-  if (!firebaseUid) {
+  const authHeaderParts = authHeader.split('Bearer ');
+  const idToken = authHeaderParts.at(1);
+  if (!idToken) {
+    next(new HttpForbiddenError());
+    return;
+  }
+
+  const decodedIdToken = await getDecodedIdToken(idToken);
+  if (!decodedIdToken) {
     next(new HttpForbiddenError());
     return;
   }
 
   const user = await prismaClient.user.findUnique({
-    where: { id: firebaseUid },
+    where: { id: decodedIdToken.uid },
   });
   if (user) {
     next(
-      new HttpForbiddenError('User has already setup required personal info'),
+      new HttpForbiddenError(
+        'User has already setup the required personal info',
+      ),
     );
   }
 
+  req.decodedIdToken = decodedIdToken;
   next();
 }

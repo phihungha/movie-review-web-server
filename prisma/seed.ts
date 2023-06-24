@@ -22,11 +22,16 @@ async function createFirebaseUser(
   name: string,
   email: string,
 ): Promise<string> {
-  const user = await getAuth().createUser({
-    email,
-    displayName: name,
-    password: '12345678',
-  });
+  let user;
+  try {
+    user = await getAuth().getUserByEmail(email);
+  } catch (err) {
+    user = await getAuth().createUser({
+      email,
+      displayName: name,
+      password: '12345678',
+    });
+  }
   return user.uid;
 }
 
