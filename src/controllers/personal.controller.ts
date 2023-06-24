@@ -1,35 +1,39 @@
 import { NextFunction, Request, Response } from 'express';
-import { User } from '@prisma/client';
 import {
-  getReviewsByUserId,
-  getThankedReviewsByUserId,
-  getViewedMoviesByUserId,
+  getUserReviews,
+  getUserThankedReviews,
+  getUserViewedMovies,
 } from '../data/users.data';
 import { prismaClient } from '../api-clients';
 import { DbErrHandlerChain } from '../db-errors';
-import { generateHashedPassword, getGenderFromReqParam } from '../utils';
+import { reqParamToGender } from '../utils';
+import { getAuth } from 'firebase-admin/auth';
+import { HttpBadRequest } from '../http-errors';
 
-export async function getViewedMoviesOfCurrentUser(
-  req: Request,
-  res: Response,
-) {
-  const user = req.user as User;
-  const result = await getViewedMoviesByUserId(user.id);
+export async function getPersonalViewedMovies(req: Request, res: Response) {
+  const user = req.user;
+  if (!user) {
+    throw new Error('User does not exist in request');
+  }
+  const result = await getUserViewedMovies(user.id);
   res.json(result);
 }
 
-export async function getReviewsOfCurrentUser(req: Request, res: Response) {
-  const user = req.user as User;
-  const result = await getReviewsByUserId(user.id);
+export async function getPersonalReviews(req: Request, res: Response) {
+  const user = req.user;
+  if (!user) {
+    throw new Error('User does not exist in request');
+  }
+  const result = await getUserReviews(user.id);
   res.json(result);
 }
 
-export async function getThankedReviewsOfCurrentUser(
-  req: Request,
-  res: Response,
-) {
-  const user = req.user as User;
-  const result = await getThankedReviewsByUserId(user.id);
+export async function getPersonalThankedReviews(req: Request, res: Response) {
+  const user = req.user;
+  if (!user) {
+    throw new Error('User does not exist in request');
+  }
+  const result = await getUserThankedReviews(user.id);
   res.json(result);
 }
 
@@ -38,18 +42,21 @@ export async function updatePersonalInfo(
   res: Response,
   next: NextFunction,
 ) {
-  const user = req.user as User;
   const username = req.body.username;
   const avatarUrl = req.body.avatarUrl;
-  const email = req.body.email;
-  const name = req.body.name;
   const dateOfBirth = req.body.dateOfBirth;
   const blogUrl = req.body.blogUrl;
-  const gender = getGenderFromReqParam(req.body.gender);
+  const gender = reqParamToGender(req.body.gender);
 
-  let newHashedPassword;
-  if (req.body.password) {
-    newHashedPassword = await generateHashedPassword(req.body.password);
+  const firebaseUid = req.firebaseUid;
+  if (!firebaseUid) {
+    throw new Error('Firebase user ID not provided');
+  }
+
+  const authService = getAuth();
+  const firebaseUser = await authService.getUser(firebaseUid);
+  if (!firebaseUser.email || !firebaseUser.displayName) {
+    throw new HttpBadRequest('Firebase user lacks email or/and display name');
   }
 
   let userTypeData;
@@ -63,23 +70,18 @@ export async function updatePersonalInfo(
 
   try {
     const result = await prismaClient.user.update({
-      where: {
-        id: user.id,
-      },
+      where: { id: firebaseUid },
       data: {
         username,
-        email,
+        email: firebaseUser.email,
         avatarUrl,
-        hashedPassword: newHashedPassword,
-        name,
+        name: firebaseUser.displayName,
         gender,
         dateOfBirth,
         ...userTypeData,
       },
     });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { hashedPassword, ...sanitizedResult } = result;
-    res.json(sanitizedResult);
+    res.json(result);
   } catch (err) {
     DbErrHandlerChain.new().notFound().unique().handle(err, next);
   }

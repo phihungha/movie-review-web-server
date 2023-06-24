@@ -2,6 +2,9 @@
 /dist
 /node_modules
 
+# Credential files
+/.creds
+
 # Logs
 logs
 *.log

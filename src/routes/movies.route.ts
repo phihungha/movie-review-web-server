@@ -15,7 +15,7 @@ import {
   thankReview,
   updateReview,
 } from '../controllers/reviews.controller';
-import passport from 'passport';
+import requireAuth from '../middlewares/require-auth.middleware';
 
 const router = Router();
 
@@ -32,7 +32,7 @@ router.put(
   '/:id/viewed',
   param('id').toInt(),
   validationErrorHandler,
-  passport.authenticate('jwt', { session: false }),
+  requireAuth,
   markMovieAsViewed,
 );
 
@@ -68,7 +68,7 @@ router.post(
   body('content').notEmpty(),
   body('score').isInt({ min: 0, max: 10 }).toInt(),
   validationErrorHandler,
-  passport.authenticate('jwt', { session: false }),
+  requireAuth,
   postReviewOfMovie,
 );
 
@@ -76,7 +76,7 @@ router.patch(
   '/:movieId/reviews/:id',
   param('id').toInt(),
   validationErrorHandler,
-  passport.authenticate('jwt', { session: false }),
+  requireAuth,
   updateReview,
 );
 
@@ -84,7 +84,7 @@ router.delete(
   '/:movieId/reviews/:id',
   param('id').toInt(),
   validationErrorHandler,
-  passport.authenticate('jwt', { session: false }),
+  requireAuth,
   deleteReview,
 );
 
@@ -92,7 +92,7 @@ router.put(
   '/:movieId/reviews/:id/thanks',
   param('id').toInt(),
   validationErrorHandler,
-  passport.authenticate('jwt', { session: false }),
+  requireAuth,
   thankReview,
 );
 

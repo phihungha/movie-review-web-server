@@ -1,6 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpError } from '../http-errors';
 
+/**
+ * Process exceptions and respond with
+ * proper a status code and error message.
+ */
 export default function errorHandler(
   err: Error,
   req: Request,

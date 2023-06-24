@@ -1,36 +1,44 @@
 import { NextFunction, Request, Response } from 'express';
-import { getReviewsByUserId } from '../data/users.data';
-import { getViewedMoviesByUserId } from '../data/users.data';
-import { getThankedReviewsByUserId } from '../data/users.data';
-import { HttpNotFoundError } from '../http-errors';
+import { getAvatarUploadUrl, getUserReviews } from '../data/users.data';
+import { getUserViewedMovies } from '../data/users.data';
+import { getUserThankedReviews } from '../data/users.data';
+import { HttpBadRequest, HttpNotFoundError } from '../http-errors';
 import { UserType } from '@prisma/client';
-import { prismaClient, s3Client } from '../api-clients';
+import { prismaClient } from '../api-clients';
 import { DbErrHandlerChain } from '../db-errors';
-import {
-  generateHashedPassword,
-  getGenderFromReqParam,
-  getUserTypeFromReqParam,
-} from '../utils';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { reqParamToGender, reqParamToUserType } from '../utils';
+import { getAuth } from 'firebase-admin/auth';
 
-async function getAvatarUploadUrl(userId: number) {
-  const command = new PutObjectCommand({
-    Bucket: process.env.S3_BUCKET,
-    Key: `'public/userProfileImages/${userId}.webp`,
+export async function getUsers(req: Request, res: Response) {
+  const searchTerm = req.query.searchTerm as string | undefined;
+  const result = await prismaClient.user.findMany({
+    where: {
+      OR: [
+        { name: { contains: searchTerm ?? '', mode: 'insensitive' } },
+        { username: { contains: searchTerm ?? '', mode: 'insensitive' } },
+      ],
+    },
   });
-  return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+  res.json(result);
 }
 
 export async function signUp(req: Request, res: Response, next: NextFunction) {
   const username = req.body.username;
-  const email = req.body.email;
-  const name = req.body.name;
   const dateOfBirth = req.body.dateOfBirth;
   const blogUrl = req.body.blogUrl;
-  const gender = getGenderFromReqParam(req.body.gender);
-  const newHashedPassword = await generateHashedPassword(req.body.password);
-  const userType = getUserTypeFromReqParam(req.body.type);
+  const gender = reqParamToGender(req.body.gender);
+  const userType = reqParamToUserType(req.body.type);
+
+  const firebaseUid = req.firebaseUid;
+  if (!firebaseUid) {
+    throw new Error('Firebase user ID not provided');
+  }
+
+  const authService = getAuth();
+  const firebaseUser = await authService.getUser(firebaseUid);
+  if (!firebaseUser.email || !firebaseUser.displayName) {
+    throw new HttpBadRequest('Firebase user lacks email or/and display name');
+  }
 
   let userTypeData;
   if (userType === UserType.Critic) {
@@ -46,41 +54,33 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
   try {
     const result = await prismaClient.user.create({
       data: {
+        id: firebaseUid,
         username,
-        email,
-        hashedPassword: newHashedPassword,
-        name,
+        email: firebaseUser.email,
+        name: firebaseUser.displayName,
         gender,
         dateOfBirth,
         userType,
         ...userTypeData,
       },
     });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { hashedPassword, avatarUrl, ...sanitizedResult } = result;
-    res.json({
-      ...sanitizedResult,
-      avatarUploadUrl: await getAvatarUploadUrl(result.id),
-    });
+    await authService.setCustomUserClaims(firebaseUid, { fullAccess: true });
+    const avatarUploadUrl = await getAvatarUploadUrl(result.id);
+    res.json({ result, avatarUploadUrl });
   } catch (err) {
     DbErrHandlerChain.new().unique().handle(err, next);
   }
 }
 
 export async function getUser(req: Request, res: Response, next: NextFunction) {
-  const userId = +req.params.id;
+  const userId = req.params.id;
   const result = await prismaClient.user.findUnique({
-    where: {
-      id: userId,
-    },
+    where: { id: userId },
   });
   if (!result) {
     return next(new HttpNotFoundError('User not found'));
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { hashedPassword, ...sanitizedResult } = result;
-  res.json(sanitizedResult);
+  res.json(result);
 }
 
 export async function getViewedMoviesOfUser(
@@ -88,8 +88,8 @@ export async function getViewedMoviesOfUser(
   res: Response,
   next: NextFunction,
 ) {
-  const userId = +req.params.id;
-  const result = await getViewedMoviesByUserId(userId);
+  const userId = req.params.id;
+  const result = await getUserViewedMovies(userId);
   if (!result) {
     next(new HttpNotFoundError('User not found'));
   } else {
@@ -102,8 +102,8 @@ export async function getReviewsOfUser(
   res: Response,
   next: NextFunction,
 ) {
-  const userId = +req.params.id;
-  const result = await getReviewsByUserId(userId);
+  const userId = req.params.id;
+  const result = await getUserReviews(userId);
   if (!result) {
     next(new HttpNotFoundError('User not found'));
   } else {
@@ -116,8 +116,8 @@ export async function getThankedReviewsOfUser(
   res: Response,
   next: NextFunction,
 ) {
-  const userId = +req.params.id;
-  const result = await getThankedReviewsByUserId(userId);
+  const userId = req.params.id;
+  const result = await getUserThankedReviews(userId);
   if (!result) {
     next(new HttpNotFoundError('User not found'));
   } else {
