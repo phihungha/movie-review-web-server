@@ -7,6 +7,7 @@ import UsersRouter from './routes/users.route';
 import PersonalRouter from './routes/personal.route';
 import errorHandler from './middlewares/error-handler.middleware';
 import { applicationDefault, initializeApp } from 'firebase-admin/app';
+import addIdentity from './middlewares/add-identity.middleware';
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ initializeApp({ credential: applicationDefault() });
 
 const app = express();
 app.use(bodyParser.json());
+app.use(addIdentity);
 
 app.use('/movies', MoviesRouter);
 app.use('/reviews', ReviewsRouter);

@@ -1,13 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import { prismaClient } from '../api-clients';
-import { Gender } from '@prisma/client';
-import { HttpNotFoundError } from '../http-errors';
+import { Gender, UserType } from '@prisma/client';
+import { HttpBadRequest, HttpNotFoundError } from '../http-errors';
 import { DbErrHandlerChain } from '../db-errors';
 import {
   calcAvgReviewScoreByRegularsAge,
   calcAvgReviewScoreByRegularsGender,
   updateAggregateData,
 } from '../data/reviews.data';
+import { reqParamToUserType } from '../utils';
 
 export async function getReviewsOfMovie(
   req: Request,
@@ -17,42 +18,54 @@ export async function getReviewsOfMovie(
   const movieId = +req.params.id;
   const limit = req.query.limit as number | undefined;
   const offset = req.query.offset as number | undefined;
+  const authorType = req.query.authorType
+    ? reqParamToUserType(req.query.authorType as string)
+    : undefined;
+  const minScore = req.query.minScore as number | undefined;
+  const maxScore = req.query.maxScore as number | undefined;
   const orderBy = req.query.orderBy;
   const asc = req.query.asc as boolean | undefined;
   const orderDirection = asc ? 'asc' : 'desc';
 
-  const result = await prismaClient.movie.findUnique({
+  const result = await prismaClient.review.findMany({
     where: {
-      id: movieId,
+      movieId,
+      authorType,
+      score: { gte: minScore, lte: maxScore },
     },
     include: {
-      reviews: {
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              criticUser: true,
-              regularUser: true,
-            },
-          },
-        },
-        take: limit ? limit : undefined,
-        skip: offset ? offset : undefined,
-        orderBy: {
-          thankCount: orderBy === 'thankCount' ? orderDirection : undefined,
-          postTime: orderBy === 'postTime' ? orderDirection : undefined,
-          score: orderBy === 'score' ? orderDirection : undefined,
+      author: {
+        select: {
+          id: true,
+          name: true,
+          criticUser: true,
+          regularUser: true,
         },
       },
+      thankUsers: req.user ? { where: { id: req.user.id } } : undefined,
+    },
+    take: limit,
+    skip: offset,
+    orderBy: {
+      thankCount: orderBy === 'thankCount' ? orderDirection : undefined,
+      postTime: orderBy === 'postTime' ? orderDirection : undefined,
+      score: orderBy === 'score' ? orderDirection : undefined,
     },
   });
 
   if (!result) {
-    next(new HttpNotFoundError('Movie not found'));
-  } else {
-    res.json(result.reviews);
+    return next(new HttpNotFoundError('Movie not found'));
   }
+
+  const personalizedResult = result.map((r) => {
+    if (r.thankUsers.length === 1) {
+      return { ...r, thankUsers: undefined, isThanked: true };
+    } else {
+      return { ...r, thankUsers: undefined, isThanked: false };
+    }
+  });
+
+  res.json(personalizedResult);
 }
 
 export async function getReview(
@@ -76,14 +89,20 @@ export async function getReview(
         },
       },
       movie: true,
+      thankUsers: req.user ? { where: { id: req.user.id } } : undefined,
     },
   });
 
   if (!result) {
-    next(new HttpNotFoundError('Review not found'));
-  } else {
-    res.json(result);
+    return next(new HttpNotFoundError('Review not found'));
   }
+
+  let isThanked = undefined;
+  if (req.user) {
+    isThanked = result?.thankUsers.length === 1;
+  }
+
+  res.json({ ...result, thankUsers: undefined, isThanked });
 }
 
 export async function getReviewBreakdown(req: Request, res: Response) {
@@ -130,6 +149,18 @@ export async function postReviewOfMovie(
     throw new Error('User does not exist in request');
   }
 
+  const existingReviews = await prismaClient.review.findMany({
+    where: { authorId: author.id, movieId: movieId },
+  });
+  if (existingReviews.length !== 0) {
+    next(
+      new HttpBadRequest(
+        "You've already made a review for this movie. Please edit it instead of making a new one",
+      ),
+    );
+    return;
+  }
+
   const newReview = await prismaClient.$transaction(async (client) => {
     try {
       const review = await client.review.create({
@@ -142,13 +173,15 @@ export async function postReviewOfMovie(
           score,
         },
       });
-      await updateAggregateData(review, review.authorType, client);
-      res.json(review);
+      await updateAggregateData(client, review);
+      return review;
     } catch (err) {
       DbErrHandlerChain.new().notFound().handle(err, next);
     }
   });
-  return newReview;
+  if (newReview) {
+    res.json(newReview);
+  }
 }
 
 export async function updateReview(
@@ -159,15 +192,31 @@ export async function updateReview(
   const reviewId = +req.params.id;
   const title = req.body.title;
   const content = req.body.content;
+  const score = req.body.score;
+  const currentUser = req.user;
 
-  try {
-    const result = await prismaClient.review.update({
-      where: { id: reviewId },
-      data: { title, content },
-    });
+  const result = await prismaClient.$transaction(async (client) => {
+    let review;
+    try {
+      review = await client.review.update({
+        where: { id: reviewId },
+        data: { title, content, score },
+      });
+    } catch (err) {
+      return DbErrHandlerChain.new().notFound().handle(err, next);
+    }
+
+    if (!currentUser || review.authorId !== currentUser.id) {
+      return next(new HttpNotFoundError('Review not found'));
+    }
+
+    await updateAggregateData(client, review);
+
+    return review;
+  });
+
+  if (result) {
     res.json(result);
-  } catch (err) {
-    DbErrHandlerChain.new().notFound().handle(err, next);
   }
 }
 
@@ -177,19 +226,30 @@ export async function deleteReview(
   next: NextFunction,
 ) {
   const reviewId = +req.params.id;
+  const currentUser = req.user;
 
-  const deletedReview = await prismaClient.$transaction(async (client) => {
+  const result = await prismaClient.$transaction(async (client) => {
+    let review;
     try {
-      const review = await client.review.delete({
+      review = await client.review.delete({
         where: { id: reviewId },
       });
-      await updateAggregateData(review, review.authorType, client);
-      res.json(review);
     } catch (err) {
-      DbErrHandlerChain.new().notFound().handle(err, next);
+      return DbErrHandlerChain.new().notFound().handle(err, next);
     }
+
+    if (!currentUser || review.authorId !== currentUser.id) {
+      return next(new HttpNotFoundError('Review not found'));
+    }
+
+    await updateAggregateData(prismaClient, review);
+
+    return review;
   });
-  return deletedReview;
+
+  if (result) {
+    res.json(result);
+  }
 }
 
 export async function thankReview(
@@ -204,36 +264,40 @@ export async function thankReview(
     throw new Error('User does not exist in request');
   }
 
-  const result = await prismaClient.$transaction(async (client) => {
-    const review = await client.review.findUnique({
+  const review = await prismaClient.review.findUnique({
+    where: { id: reviewId },
+    include: {
+      thankUsers: {
+        where: { id: user.id },
+      },
+    },
+  });
+
+  if (!review) {
+    return next(new HttpNotFoundError('Review not found'));
+  }
+
+  let result;
+  let isThanked;
+  if (review.thankUsers.length === 0) {
+    result = await prismaClient.review.update({
       where: { id: reviewId },
-      include: {
-        thankUsers: {
-          where: { id: user.id },
-        },
+      data: {
+        thankUsers: { connect: { id: user.id } },
+        thankCount: { increment: 1 },
       },
     });
-
-    if (!review) {
-      return next(new HttpNotFoundError('Review not found'));
-    }
-
-    if (review.thankUsers.length === 0) {
-      return await client.review.update({
-        where: { id: reviewId },
-        data: {
-          thankUsers: { connect: { id: user.id } },
-          thankCount: { increment: 1 },
-        },
-      });
-    }
-    return await client.review.update({
+    isThanked = true;
+  } else {
+    result = await prismaClient.review.update({
       where: { id: reviewId },
       data: {
         thankUsers: { disconnect: { id: user.id } },
         thankCount: { decrement: 1 },
       },
     });
-  });
-  res.json(result);
+    isThanked = false;
+  }
+
+  res.json({ ...result, isThanked });
 }

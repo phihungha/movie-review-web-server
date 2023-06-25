@@ -4,6 +4,7 @@ import {
   getPersonalReviews,
   getPersonalViewedMovies,
   signUp,
+  getPersonalDetails,
 } from '../controllers/personal.controller';
 import { param, body } from 'express-validator';
 import { updatePersonalInfo } from '../controllers/personal.controller';
@@ -13,6 +14,8 @@ import requireAuth from '../middlewares/require-auth.middleware';
 import requireNewUserAuth from '../middlewares/require-new-user-auth.middleware';
 
 const router = Router();
+
+router.get('/', requireAuth, getPersonalDetails);
 
 router.get('/viewed-movies', requireAuth, getPersonalViewedMovies);
 
@@ -56,6 +59,3 @@ router.patch(
 );
 
 export default router;
-function calcLatestDateOfBirthAllowed(): string | undefined {
-  throw new Error('Function not implemented.');
-}

@@ -12,6 +12,7 @@
     "lint": "eslint \"src/**/*.ts\" --cache --fix",
     "ci-lint": "eslint \"src/**/*.ts\"",
     "test": "jest --passWithNoTests",
+    "get-id-token": "ts-node tools/get-id-token.ts",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
     "migrate:dev": "prisma migrate dev",

@@ -1,4 +1,4 @@
-import { PrismaClient, UserType, Gender } from '@prisma/client';
+import { PrismaClient, UserType, Gender, User } from '@prisma/client';
 import { applicationDefault, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 
@@ -21,10 +21,12 @@ async function createCompany(name: string) {
 async function createFirebaseUser(
   name: string,
   email: string,
+  role: UserType,
 ): Promise<string> {
+  const authService = getAuth();
   let user;
   try {
-    user = await getAuth().getUserByEmail(email);
+    user = await authService.getUserByEmail(email);
   } catch (err) {
     user = await getAuth().createUser({
       email,
@@ -32,6 +34,7 @@ async function createFirebaseUser(
       password: '12345678',
     });
   }
+  await authService.setCustomUserClaims(user.uid, { fullAccess: true, role });
   return user.uid;
 }
 
@@ -39,7 +42,11 @@ async function main() {
   // Create users
   const johnRegular = await prisma.user.create({
     data: {
-      id: await createFirebaseUser('John Xina', 'john@gmail.com'),
+      id: await createFirebaseUser(
+        'John Xina',
+        'john@gmail.com',
+        UserType.Regular,
+      ),
       username: 'john',
       avatarUrl:
         'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/userProfileImages/2.webp',
@@ -54,7 +61,11 @@ async function main() {
 
   const janeRegular = await prisma.user.create({
     data: {
-      id: await createFirebaseUser('Jane Sauna', 'jane@gmail.com'),
+      id: await createFirebaseUser(
+        'Jane Sauna',
+        'jane@gmail.com',
+        UserType.Regular,
+      ),
       username: 'jane',
       avatarUrl:
         'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/userProfileImages/3.webp',
@@ -69,7 +80,11 @@ async function main() {
 
   const michikoRegular = await prisma.user.create({
     data: {
-      id: await createFirebaseUser('Michiko Oumae', 'michiko@gmail.com'),
+      id: await createFirebaseUser(
+        'Michiko Oumae',
+        'michiko@gmail.com',
+        UserType.Regular,
+      ),
       username: 'michiko',
       email: 'michiko@gmail.com',
       name: 'Michiko Oumae',
@@ -81,7 +96,11 @@ async function main() {
 
   const hungRegular = await prisma.user.create({
     data: {
-      id: await createFirebaseUser('Hà Phi Hùng', 'hung@gmail.com'),
+      id: await createFirebaseUser(
+        'Hà Phi Hùng',
+        'hung@gmail.com',
+        UserType.Regular,
+      ),
       username: 'hung',
       avatarUrl:
         'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/userProfileImages/4.webp',
@@ -96,7 +115,11 @@ async function main() {
 
   const thanosRegular = await prisma.user.create({
     data: {
-      id: await createFirebaseUser('Nguyễn Thị Thanos', 'thanos@gmail.com'),
+      id: await createFirebaseUser(
+        'Nguyễn Thị Thanos',
+        'thanos@gmail.com',
+        UserType.Regular,
+      ),
       username: 'thanos',
       avatarUrl: 'aws-s3/abcd',
       email: 'thanos@gmail.com',
@@ -109,7 +132,11 @@ async function main() {
 
   const ebertCritic = await prisma.user.create({
     data: {
-      id: await createFirebaseUser('Roger Ebert', 'ebert@gmail.com'),
+      id: await createFirebaseUser(
+        'Roger Ebert',
+        'ebert@gmail.com',
+        UserType.Critic,
+      ),
       username: 'ebert',
       avatarUrl:
         'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/userProfileImages/1.webp',
@@ -124,7 +151,11 @@ async function main() {
 
   const kermodeCritic = await prisma.user.create({
     data: {
-      id: await createFirebaseUser('Mark Kemode', 'kemode@gmail.com'),
+      id: await createFirebaseUser(
+        'Mark Kemode',
+        'kemode@gmail.com',
+        UserType.Critic,
+      ),
       username: 'kemode',
       avatarUrl:
         'https://filmnewforest.com/wp-content/uploads/2019/02/Mark-Kermode-image-2018-JE-200x300.jpg',

@@ -19,7 +19,25 @@ import requireAuth from '../middlewares/require-auth.middleware';
 
 const router = Router();
 
-router.get('/', getMovies);
+router.get(
+  '/',
+  query('limit').optional().isInt({ min: 0 }).toInt(),
+  query('offset').optional().isInt({ min: 0 }).toInt(),
+  query('releaseYear')
+    .optional()
+    .isInt({ min: 1900, max: new Date().getFullYear() })
+    .toInt(),
+  query('minRegularScore').optional().isInt({ min: 0, max: 10 }).toInt(),
+  query('maxRegularScore').optional().isInt({ min: 0, max: 10 }).toInt(),
+  query('minCriticScore').optional().isInt({ min: 0, max: 10 }).toInt(),
+  query('maxCriticScore').optional().isInt({ min: 0, max: 10 }).toInt(),
+  query('orderBy')
+    .optional()
+    .isIn(['releaseDate', 'criticScore', 'regularScore', 'viewedUserCount']),
+  query('asc').optional().toBoolean(),
+  validationErrorHandler,
+  getMovies,
+);
 
 router.get(
   '/:id',
@@ -40,7 +58,10 @@ router.get(
   '/:id/reviews',
   param('id').toInt(),
   query('limit').optional().isInt({ min: 0 }).toInt(),
-  query('skip').optional().isInt({ min: 0 }).toInt(),
+  query('offset').optional().isInt({ min: 0 }).toInt(),
+  query('authorType').optional().isIn(['regular', 'critic']),
+  query('minScore').optional().isInt({ min: 0, max: 10 }).toInt(),
+  query('maxScore').optional().isInt({ min: 0, max: 10 }).toInt(),
   query('orderBy').optional().isIn(['thankCount', 'postTime', 'score']),
   query('asc').optional().toBoolean(),
   validationErrorHandler,
@@ -75,6 +96,9 @@ router.post(
 router.patch(
   '/:movieId/reviews/:id',
   param('id').toInt(),
+  body('title').notEmpty(),
+  body('content').notEmpty(),
+  body('score').isInt({ min: 0, max: 10 }).toInt(),
   validationErrorHandler,
   requireAuth,
   updateReview,

@@ -1,4 +1,4 @@
-import { Gender, Review, UserType } from '@prisma/client';
+import { Gender, PrismaClient, Review, UserType } from '@prisma/client';
 import { prismaClient } from '../api-clients';
 import { calcDateOfBirthFromAge } from '../utils';
 import { PrismaTxClient } from '../types';
@@ -44,10 +44,10 @@ export async function calcAvgReviewScoreByRegularsAge(
 }
 
 export async function updateAggregateData(
+  prismaClient: PrismaTxClient | PrismaClient,
   review: Review,
-  authorType: UserType,
-  prismaClient: PrismaTxClient,
 ) {
+  const authorType = review.authorType;
   const reviewAggregates = await prismaClient.review.aggregate({
     _avg: { score: true },
     _count: { id: true },
