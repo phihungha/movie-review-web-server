@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { prismaClient } from '../api-clients';
-import { Gender } from '@prisma/client';
+import { Gender, UserType } from '@prisma/client';
 import { HttpBadRequest, HttpNotFoundError } from '../http-errors';
 import { DbErrHandlerChain } from '../db-errors';
 import {
@@ -8,6 +8,7 @@ import {
   calcAvgReviewScoreByRegularsGender,
   updateAggregateData,
 } from '../data/reviews.data';
+import { reqParamToUserType } from '../utils';
 
 export async function getReviewsOfMovie(
   req: Request,
@@ -17,12 +18,21 @@ export async function getReviewsOfMovie(
   const movieId = +req.params.id;
   const limit = req.query.limit as number | undefined;
   const offset = req.query.offset as number | undefined;
+  const authorType = req.query.authorType
+    ? reqParamToUserType(req.query.authorType as string)
+    : undefined;
+  const minScore = req.query.minScore as number | undefined;
+  const maxScore = req.query.maxScore as number | undefined;
   const orderBy = req.query.orderBy;
   const asc = req.query.asc as boolean | undefined;
   const orderDirection = asc ? 'asc' : 'desc';
 
   const result = await prismaClient.review.findMany({
-    where: { movieId },
+    where: {
+      movieId,
+      authorType,
+      score: { gte: minScore, lte: maxScore },
+    },
     include: {
       author: {
         select: {
@@ -34,8 +44,8 @@ export async function getReviewsOfMovie(
       },
       thankUsers: req.user ? { where: { id: req.user.id } } : undefined,
     },
-    take: limit ? limit : undefined,
-    skip: offset ? offset : undefined,
+    take: limit,
+    skip: offset,
     orderBy: {
       thankCount: orderBy === 'thankCount' ? orderDirection : undefined,
       postTime: orderBy === 'postTime' ? orderDirection : undefined,

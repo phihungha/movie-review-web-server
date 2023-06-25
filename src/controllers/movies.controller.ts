@@ -4,10 +4,38 @@ import { HttpNotFoundError } from '../http-errors';
 
 export async function getMovies(req: Request, res: Response) {
   const searchTerm = req.query.searchTerm as string | undefined;
+  const limit = req.query.limit as number | undefined;
+  const offset = req.query.offset as number | undefined;
+  const releaseYear = req.query.releaseYear as number | undefined;
+  const minRegularScore = req.query.minRegularScore as number | undefined;
+  const maxRegularScore = req.query.maxRegularScore as number | undefined;
+  const minCriticScore = req.query.minCriticScore as number | undefined;
+  const maxCriticScore = req.query.maxCriticScore as number | undefined;
+  const orderBy = req.query.orderBy;
+  const asc = req.query.asc as boolean | undefined;
+  const orderDirection = asc ? 'asc' : 'desc';
+
   const result = await prismaClient.movie.findMany({
     where: {
       title: { contains: searchTerm, mode: 'insensitive' },
+      regularScore: { gte: minRegularScore, lte: maxRegularScore },
+      criticScore: { gte: minCriticScore, lte: maxCriticScore },
+      releaseDate: releaseYear
+        ? {
+            gte: new Date(releaseYear, 1, 1),
+            lte: new Date(releaseYear, 12, 31),
+          }
+        : undefined,
     },
+    orderBy: {
+      releaseDate: orderBy === 'releaseDate' ? orderDirection : undefined,
+      criticScore: orderBy === 'criticScore' ? orderDirection : undefined,
+      regularScore: orderBy === 'regularScore' ? orderDirection : undefined,
+      viewedUserCount:
+        orderBy === 'viewedUserCount' ? orderDirection : undefined,
+    },
+    take: limit,
+    skip: offset,
   });
   res.json(result);
 }
