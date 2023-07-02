@@ -40,6 +40,33 @@ export async function getMovies(req: Request, res: Response) {
   res.json(result);
 }
 
+export async function getRecentMovies(_: Request, res: Response) {
+  const result = await prismaClient.movie.findMany({
+    orderBy: { releaseDate: 'desc' },
+    take: 30,
+  });
+  res.json(result);
+}
+
+function calcTrendingDateLimit(): Date {
+  const today = new Date();
+  today.setDate(-7);
+  return today;
+}
+
+export async function getTrendingMovies(_: Request, res: Response) {
+  const result = await prismaClient.movie.findMany({
+    where: {
+      releaseDate: { gte: calcTrendingDateLimit() },
+    },
+    orderBy: {
+      viewedUserCount: 'desc',
+    },
+    take: 30,
+  });
+  res.json(result);
+}
+
 export async function getMovieDetails(req: Request, res: Response) {
   const movieId = +req.params.id;
   const result = await prismaClient.movie.findUnique({

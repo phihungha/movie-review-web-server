@@ -9,6 +9,10 @@ import errorHandler from './middlewares/error-handler.middleware';
 import { applicationDefault, initializeApp } from 'firebase-admin/app';
 import addIdentity from './middlewares/add-identity.middleware';
 import cors from 'cors';
+import {
+  getRecentMovies,
+  getTrendingMovies,
+} from './controllers/movies.controller';
 
 dotenv.config();
 
@@ -20,6 +24,8 @@ app.use(cors());
 app.use(addIdentity);
 
 app.use('/movies', MoviesRouter);
+app.use('/trendingMovies', getTrendingMovies);
+app.use('/recentMovies', getRecentMovies);
 app.use('/reviews', ReviewsRouter);
 app.use('/users', UsersRouter);
 app.use('/personal', PersonalRouter);
