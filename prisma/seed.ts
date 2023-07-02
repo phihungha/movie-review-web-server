@@ -223,6 +223,10 @@ async function main() {
         'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/moviePosters/tenet-2020-1.webp',
       releaseDate: new Date(2020, 9, 3),
       runningTime: 9000,
+      synopsis:
+        'Armed with only one word - Tenet - and fighting for the survival ' +
+        'of the entire world, the Protagonist journeys through a twilight world of ' +
+        'international espionage on a mission that will unfold in something beyond real time.',
       genres: {
         connect: [{ name: 'Sci-Fi' }, { name: 'Action' }, { name: 'Thriller' }],
       },
@@ -292,6 +296,12 @@ async function main() {
         'https://cinerate-movie-review-service.s3.ap-southeast-1.amazonaws.com/public/moviePosters/dune-2021-1.webp',
       releaseDate: new Date(2021, 10, 22),
       runningTime: 9360,
+      synopsis:
+        'Paul Atreides, a brilliant and gifted young man born into a great destiny beyond his understanding, ' +
+        'must travel to the most dangerous planet in the universe to ensure the future ' +
+        "of his family and his people. As malevolent forces explode into conflict over the planet's " +
+        'exclusive supply of the most precious resource in existence. -a commodity capable of unlocking ' +
+        "humanity's greatest potential-only those who can conquer their fear will survive.",
       genres: {
         connect: [{ name: 'Sci-Fi' }, { name: 'Drama' }],
       },
