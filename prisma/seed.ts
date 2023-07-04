@@ -392,9 +392,10 @@ async function main() {
       author: { connect: { id: ebertCritic.id } },
       movie: { connect: { id: tenet.id } },
       title: 'Good for Nolan fans.',
-      content: `It is 100% designed as an experience for people who have unpacked films
-         like The Prestige and Memento late into the night, hoping to give Nolan fans
-         more to chew on than ever before.`,
+      content:
+        'It is 100% designed as an experience for people who have unpacked films' +
+        'like The Prestige and Memento late into the night, hoping to give Nolan fans' +
+        'more to chew on than ever before.`',
       score: 7,
       externalUrl: 'https://www.rogerebert.com/reviews/tenet-movie-review-2020',
     },
@@ -420,9 +421,10 @@ async function main() {
       author: { connect: { id: janeRegular.id } },
       movie: { connect: { id: dune.id } },
       title: 'A Great Modern Sci-Fi',
-      content: `Denis Villeneuve has accomplished what was considered impossible for decades,
-        to write and direct a faithful adaptation to the fantastic 1965 sci-fi novel by Frank Herbert.
-        And I'm here to tell you, he has done it, he has actually done it.`,
+      content:
+        'Denis Villeneuve has accomplished what was considered impossible for decades' +
+        'to write and direct a faithful adaptation to the fantastic 1965 sci-fi novel by Frank Herbert' +
+        "And I'm here to tell you, he has done it, he has actually done it.",
       score: 9,
       thankUsers: {
         connect: [
@@ -442,9 +444,10 @@ async function main() {
       author: { connect: { id: thanosRegular.id } },
       movie: { connect: { id: dune.id } },
       title: 'My movie of 2021, so far',
-      content: `It's been amazing being back in cinemas after last year,
-        I have seen some good films, and some shockers,
-        this though, is the first great film of the year for me.`,
+      content:
+        "It's been amazing being back in cinemas after last year" +
+        'I have seen some good films, and some shockers' +
+        'this though, is the first great film of the year for me.',
       score: 10,
       thankUsers: {
         connect: [{ id: thanosRegular.id }, { id: johnRegular.id }],
@@ -459,8 +462,9 @@ async function main() {
       author: { connect: { id: michikoRegular.id } },
       movie: { connect: { id: dune.id } },
       title: 'A bit slow but good',
-      content: `This movie is quite slow but it focuses on
-      characters and world-building is out-of-this-world`,
+      content:
+        'This movie is quite slow but it focuses on' +
+        'characters and world-building is out-of-this-world',
       score: 8,
     },
   });
@@ -471,8 +475,9 @@ async function main() {
       author: { connect: { id: kermodeCritic.id } },
       movie: { connect: { id: dune.id } },
       title: 'Why Dune endures.',
-      content: `Denis Villeneuve's new big-screen adaptation underlines
-        why generations have been fascinated by the story.`,
+      content:
+        "Denis Villeneuve's new big-screen adaptation underlines" +
+        'why generations have been fascinated by the story.',
       score: 8,
       externalUrl:
         'https://www.vox.com/22629441/dune-review-villeneuve-lynch-jodorowsky-herbert',
