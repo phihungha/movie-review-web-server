@@ -58,13 +58,16 @@ export async function getReviewsOfMovie(
   }
 
   const personalizedResult = result.map((r) => {
-    if (r.thankUsers.length === 1) {
-      return { ...r, thankUsers: undefined, isThanked: true };
+    if (req.user) {
+      return {
+        ...r,
+        thankUsers: undefined,
+        isThanked: r.thankUsers.length === 1,
+      };
     } else {
-      return { ...r, thankUsers: undefined, isThanked: false };
+      return { ...r, thankUsers: undefined };
     }
   });
-
   res.json(personalizedResult);
 }
 
@@ -102,7 +105,12 @@ export async function getReview(
     isThanked = result?.thankUsers.length === 1;
   }
 
-  res.json({ ...result, thankUsers: undefined, isThanked });
+  let isMine = undefined;
+  if (req.user) {
+    isMine = req.user.id === result.authorId;
+  }
+
+  res.json({ ...result, thankUsers: undefined, isThanked, isMine });
 }
 
 export async function getReviewBreakdown(req: Request, res: Response) {

@@ -6,9 +6,9 @@ export async function getUserDetails(userId: string) {
   return await prismaClient.user.findUnique({
     where: { id: userId },
     include: {
-      viewedMovies: { take: 5 },
-      reviews: { take: 5 },
-      reviewThanks: { take: 5 },
+      viewedMovies: { take: 3 },
+      reviews: { take: 3 },
+      reviewThanks: { take: 3 },
     },
   });
 }
