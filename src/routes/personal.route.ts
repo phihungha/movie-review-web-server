@@ -45,7 +45,6 @@ router.post(
 
 router.patch(
   '/',
-  param('id'),
   body('username').optional().notEmpty(),
   body('gender').optional().toLowerCase().isIn(['male', 'female', 'other']),
   body('dateOfBirth')
