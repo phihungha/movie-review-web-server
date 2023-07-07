@@ -22,7 +22,6 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 app.use(addIdentity);
-app.options('*', cors());
 
 app.use('/movies', MoviesRouter);
 app.use('/trendingMovies', getTrendingMovies);
