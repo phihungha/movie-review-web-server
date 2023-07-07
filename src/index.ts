@@ -20,7 +20,7 @@ initializeApp({ credential: applicationDefault() });
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+app.use(cors());
 app.use(addIdentity);
 
 app.use('/movies', MoviesRouter);

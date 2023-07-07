@@ -23,6 +23,7 @@ router.get(
   '/',
   query('limit').optional().isInt({ min: 0 }).toInt(),
   query('offset').optional().isInt({ min: 0 }).toInt(),
+  query('searchTerm').optional(),
   query('releaseYear')
     .optional()
     .isInt({ min: 1900, max: new Date().getFullYear() })

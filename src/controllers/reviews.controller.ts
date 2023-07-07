@@ -83,14 +83,7 @@ export async function getReview(
       id: reviewId,
     },
     include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-          criticUser: true,
-          regularUser: true,
-        },
-      },
+      author: true,
       movie: true,
       thankUsers: req.user ? { where: { id: req.user.id } } : undefined,
     },
