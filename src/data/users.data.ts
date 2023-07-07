@@ -7,8 +7,8 @@ export async function getUserDetails(userId: string) {
     where: { id: userId },
     include: {
       viewedMovies: { take: 3 },
-      reviews: { take: 3 },
-      reviewThanks: { take: 3 },
+      reviews: { take: 3, include: { author: true } },
+      reviewThanks: { take: 3, include: { author: true } },
     },
   });
 }
@@ -24,7 +24,7 @@ export async function getUserViewedMovies(userId: string) {
 export async function getUserReviews(userId: string) {
   const result = await prismaClient.user.findUnique({
     where: { id: userId },
-    include: { reviews: true },
+    include: { reviews: { include: { author: true } } },
   });
   return result?.reviews;
 }
@@ -32,7 +32,7 @@ export async function getUserReviews(userId: string) {
 export async function getUserThankedReviews(userId: string) {
   const result = await prismaClient.user.findUnique({
     where: { id: userId },
-    include: { reviewThanks: true },
+    include: { reviewThanks: { include: { author: true } } },
   });
   return result?.reviewThanks;
 }
