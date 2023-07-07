@@ -10,7 +10,7 @@ export default async function requireNewUserAuth(
   res: Response,
   next: NextFunction,
 ) {
-  if (!req.user) {
+  if (req.user) {
     return next(
       new HttpForbiddenError(
         'User has already set up the required personal info',
