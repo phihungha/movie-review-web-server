@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { prismaClient } from '../api-clients';
-import { Gender, UserType } from '@prisma/client';
+import { Gender } from '@prisma/client';
 import { HttpBadRequest, HttpNotFoundError } from '../http-errors';
 import { DbErrHandlerChain } from '../db-errors';
 import {
@@ -34,14 +34,8 @@ export async function getReviewsOfMovie(
       score: { gte: minScore, lte: maxScore },
     },
     include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-          criticUser: true,
-          regularUser: true,
-        },
-      },
+      author: true,
+      movie: true,
       thankUsers: req.user ? { where: { id: req.user.id } } : undefined,
     },
     take: limit,
