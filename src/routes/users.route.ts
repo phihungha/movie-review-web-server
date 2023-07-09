@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { param } from 'express-validator';
+import { param, query } from 'express-validator';
 import {
   getReviewsOfUser,
   getThankedReviewsOfUser,
@@ -11,7 +11,7 @@ import validationErrorHandler from '../middlewares/validation-error-handler.midd
 
 const router = Router();
 
-router.get('/', getUsers);
+router.get('/', query('searchTerm').optional(), getUsers);
 
 router.get('/:id', param('id'), validationErrorHandler, getUser);
 
