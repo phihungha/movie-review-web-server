@@ -1,6 +1,7 @@
 import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { prismaClient, s3Client } from '../api-clients';
+import { prismaClient } from '../db-client';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { imageService } from '../image-service';
 
 export async function getUserDetails(userId: string) {
   return await prismaClient.user.findUnique({
@@ -38,9 +39,5 @@ export async function getUserThankedReviews(userId: string) {
 }
 
 export async function getAvatarUploadUrl(userId: string) {
-  const command = new PutObjectCommand({
-    Bucket: process.env.S3_BUCKET,
-    Key: `'public/userProfileImages/${userId}.webp`,
-  });
-  return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+  return await imageService.getProfileImageUploadUrl(userId);
 }

@@ -6,7 +6,7 @@ import {
   getUserViewedMovies,
   getUserDetails,
 } from '../data/users.data';
-import { prismaClient } from '../api-clients';
+import { prismaClient } from '../db-client';
 import { DbErrHandlerChain } from '../db-errors';
 import { reqParamToGender, reqParamToUserType } from '../utils';
 import { getAuth } from 'firebase-admin/auth';

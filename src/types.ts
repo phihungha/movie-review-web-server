@@ -1,4 +1,4 @@
-import { prismaClient } from './api-clients';
+import { prismaClient } from './db-client';
 
 type PrismaTransactionFunc = typeof prismaClient.$transaction;
 type PrismaTransaction = Parameters<PrismaTransactionFunc>[0];

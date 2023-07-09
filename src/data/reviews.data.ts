@@ -1,5 +1,5 @@
 import { Gender, PrismaClient, Review, UserType } from '@prisma/client';
-import { prismaClient } from '../api-clients';
+import { prismaClient } from '../db-client';
 import { calcDateOfBirthFromAge } from '../utils';
 import { PrismaTxClient } from '../types';
 

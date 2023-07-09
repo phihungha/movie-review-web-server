@@ -3,7 +3,7 @@ import { getUserDetails, getUserReviews } from '../data/users.data';
 import { getUserViewedMovies } from '../data/users.data';
 import { getUserThankedReviews } from '../data/users.data';
 import { HttpNotFoundError } from '../http-errors';
-import { prismaClient } from '../api-clients';
+import { prismaClient } from '../db-client';
 
 export async function getUsers(req: Request, res: Response) {
   const searchTerm = req.query.searchTerm as string | undefined;

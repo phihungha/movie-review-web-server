@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { getDecodedIdToken } from '../data/auth.data';
-import { prismaClient } from '../api-clients';
+import { prismaClient } from '../db-client';
 
 /**
  * Add user and Firebase ID token to a request

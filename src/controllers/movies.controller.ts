@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { prismaClient } from '../api-clients';
+import { prismaClient } from '../db-client';
 import { HttpNotFoundError } from '../http-errors';
 
 export async function getMovies(req: Request, res: Response) {
